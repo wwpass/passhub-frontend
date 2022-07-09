@@ -1,0 +1,58 @@
+{
+  "name": "passhub-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "./frontend/",
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.15.0",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "axios": "^0.21.4",
+    "bootstrap": "^4.6.1",
+    "file-saver": "^2.0.5",
+    "hi-base32": "^0.5.1",
+    "node-forge": "^0.10.0",
+    "password-generator": "^2.3.2",
+    "rc-slider": "^9.7.4",
+    "react": "^17.0.2",
+    "react-bootstrap": "^1.6.4",
+    "react-contexify": "^5.0.0",
+    "react-countdown-circle-timer": "^3.0.9",
+    "react-dom": "^17.0.2",
+    "react-idle-timer": "^4.6.4",
+    "react-scripts": "4.0.3",
+    "react-textarea-autosize": "^8.3.3",
+    "web-vitals": "^1.1.2",
+    "wwpass-frontend": "^3.1.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "builddev": "dotenv -e .env.development react-scripts build",
+    "buildext-win": "set \"INLINE_RUNTIME_CHUNK=false\" && set \"PUBLIC_URL=.\" && set \"BUILD_PATH=./build-ext\" && react-scripts build",
+    "buildext": "INLINE_RUNTIME_CHUNK=false npm run build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "dotenv-cli": "^4.1.0"
+  }
+}
