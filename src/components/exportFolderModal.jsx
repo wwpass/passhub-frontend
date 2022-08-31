@@ -58,7 +58,7 @@ class ExportFolderModal extends Component {
       !Array.isArray(this.props.folder)
     ) {
       const folderName =
-        this.props.folder.path[this.props.folder.path.length - 1];
+        this.props.folder.path[this.props.folder.path.length - 1][0];
       const isSafe = this.props.folder.path.length < 2;
       const folderType = isSafe ? "Safe" : "Folder";
       title = `Export ${folderType}: ${folderName}`;

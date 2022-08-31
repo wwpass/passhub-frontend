@@ -280,11 +280,11 @@ class BankCardModal extends Component {
     if (this.state.ccExpMonth !== "" && this.state.ccExpYear !== "") {
       expDate = `${this.state.ccExpMonth}/${this.state.ccExpYear.substring(2)}`;
     }
-
+    /*
     const path = this.props.args.folder
       ? this.props.args.folder.path.join(" > ")
       : [];
-
+*/
     return (
       <ItemModal
         show={this.props.show}

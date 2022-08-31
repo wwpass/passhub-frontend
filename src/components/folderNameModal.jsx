@@ -173,7 +173,7 @@ class FolderNameModal extends Component {
 
     // rename
     let prevName =
-      this.props.args.folder.path[this.props.args.folder.path.length - 1];
+      this.props.args.folder.path[this.props.args.folder.path.length - 1][0];
     if (prevName == name) {
       this.props.onClose();
       return;
@@ -208,7 +208,9 @@ class FolderNameModal extends Component {
       if (this.props.args.folder) {
         // rename
         this.state.name =
-          this.props.args.folder.path[this.props.args.folder.path.length - 1];
+          this.props.args.folder.path[
+            this.props.args.folder.path.length - 1
+          ][0];
       } else {
         this.state.name = "";
       }
@@ -231,10 +233,13 @@ class FolderNameModal extends Component {
 
     let path = "";
     if (this.props.args.parent) {
-      path = this.props.args.parent.path.join(" > ");
+      path = this.props.args.parent.path.map((e) => e[0]).join(" > ");
     } else if (this.props.args.folder) {
       if (this.props.args.folder.path.length > 1) {
-        path = this.props.args.folder.path.slice(0, -1).join(" > ");
+        path = this.props.args.folder.path
+          .slice(0, -1)
+          .map((e) => e[0])
+          .join(" > ");
       }
     }
 

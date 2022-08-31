@@ -7,6 +7,7 @@ import Form from "react-bootstrap/Form";
 import ItemModalFieldNav from "./itemModalFieldNav";
 import ItemViewIcon from "./itemViewIcon";
 import ModalCross from "./modalCross";
+import PathElement from "./pathElement";
 
 import { putCopyBuffer } from "../lib/copyBuffer";
 import TextareaAutosize from "react-textarea-autosize";
@@ -129,9 +130,33 @@ class ItemModal extends Component {
       path = this.props.args.folder.path;
     }
 
-    folderName = path[path.length - 1];
+    folderName = path[path.length - 1][0];
 
-    const pathString = path.join(" > ");
+    // const pathNames = path.map((e) => e[0]);
+    // const pathString = pathNames.join(" > ");
+
+    let pathString = [];
+    for (let i = 0; i < path.length; i++) {
+      pathString.push(
+        <PathElement
+          name={path[i][0]}
+          folderid={path[i][1]}
+          gt={path.length - i - 1}
+          onClick={(f) => this.props.onCloseSetFolder(f)}
+        ></PathElement>
+      );
+    }
+    /*
+    let pathString = path.map((p) => (
+      <PathElement
+        name={path[i][0]}
+        folderid={path[i][1]}
+        gt={path.length - i - 1}
+        onClick={(f) => this.props.onCloseSetFolder(f)}
+      ></PathElement>
+    ));
+*/
+
     /*
     if (this.props.args.folder) {
       path = this.props.args.folder.path.join(" > ");
@@ -204,10 +229,7 @@ class ItemModal extends Component {
         </div>
 
         <div className="itemModalNav">
-          <div
-            className="itemModalPath d-none d-sm-block set-active-folder"
-            onClick={this.props.onCloseSetFolder}
-          >
+          <div className="itemModalPath d-none d-sm-block set-active-folder">
             {pathString}
           </div>
           {!this.state.edit ? (

@@ -320,9 +320,11 @@ class PasswordModal extends Component {
 
     let passwordType = this.state.showPassword ? "text" : "password";
 
+    /*
     const path = this.props.args.folder
       ? this.props.args.folder.path.join(" > ")
       : [];
+    */
 
     const { strongPassword, reason } = isStrongPassword(this.state.password);
 

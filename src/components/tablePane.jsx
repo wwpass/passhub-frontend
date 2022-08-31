@@ -20,6 +20,7 @@ import CreateFileModal from "./createFileModal";
 import DeleteItemModal from "./deleteItemModal";
 import AddDropUp from "./addDropUp";
 import FolderMenuMobile from "./folderMenuMobile";
+import PathElement from "./pathElement";
 
 import { getFolderById } from "../lib/utils";
 
@@ -214,7 +215,7 @@ class TablePane extends Component {
     }
   };
 
-  onItemModalCloseSetFolder = () => {
+  onItemModalCloseSetFolder = (f) => {
     this.setState({ showModal: "" });
     if (this.props.searchMode) {
       const folderID =
@@ -222,6 +223,8 @@ class TablePane extends Component {
           ? this.state.itemModalArgs.item.folder
           : this.state.itemModalArgs.item.SafeID;
       this.props.setActiveFolder(folderID);
+    } else {
+      this.props.setActiveFolder(f);
     }
   };
 
@@ -244,11 +247,26 @@ class TablePane extends Component {
     }
 
     const { folder } = this.props;
-
+    /*
     const pathToFolder =
       folder.path.length < 2
         ? ""
-        : folder.path.slice(0, -1).join(" > ") + " > ";
+        : folder.path
+            .slice(0, -1)
+            .map((e) => e[0])
+            .join(" > ") + " > ";
+*/
+    let pathString = [];
+    for (let i = 0; i < folder.path.length - 1; i++) {
+      pathString.push(
+        <PathElement
+          name={folder.path[i][0]}
+          folderid={folder.path[i][1]}
+          gt={folder.path.length - i - 1}
+          onClick={(f) => this.openFolder(f)}
+        ></PathElement>
+      );
+    }
 
     const emptyFolder = !(folder.folders.length + folder.items.length > 0);
     const isSafe = folder.path.length === 1 && !this.props.searchMode;
@@ -306,7 +324,7 @@ class TablePane extends Component {
 
             {folder.path.length === 1
               ? "All safes"
-              : folder.path[folder.path.length - 2]}
+              : folder.path[folder.path.length - 2][0]}
           </div>
           <div
             className="d-sm-none"
@@ -316,7 +334,7 @@ class TablePane extends Component {
               position: "relative",
             }}
           >
-            <div className="h5">{folder.path[folder.path.length - 1]}</div>
+            <div className="h5">{folder.path[folder.path.length - 1][0]}</div>
             {!this.props.searchMode && true && (
               <FolderMenuMobile
                 node={folder}
@@ -331,8 +349,8 @@ class TablePane extends Component {
             className="d-none d-sm-block"
             style={{ color: "#1B1B26", marginBottom: "28px" }}
           >
-            {pathToFolder}
-            <b>{folder.path[folder.path.length - 1]}</b>
+            {pathString}
+            <b>{folder.path[folder.path.length - 1][0]}</b>
           </div>
 
           {emptyFolder && (
