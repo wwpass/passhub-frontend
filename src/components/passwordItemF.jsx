@@ -66,7 +66,9 @@ function PasswordItem(props) {
           {item.cleartext[0]}
         </div>
         {props.searchMode && (
-          <div className="search-path">{item.path.join(" > ")}</div>
+          <div className="search-path">
+            {item.path.map((e) => e[0]).join(" > ")}
+          </div>
         )}
       </td>
       <td className="d-none d-md-table-cell           col-md-6 col-lg-4 col-xl-3">

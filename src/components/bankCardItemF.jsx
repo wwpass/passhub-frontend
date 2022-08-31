@@ -40,7 +40,9 @@ function BankCardItem(props) {
           {item.cleartext[1]}
         </div>
         {props.searchMode && (
-          <div className="search-path">{item.path.join(" > ")}</div>
+          <div className="search-path">
+            {item.path.map((e) => e[0]).join(" > ")}
+          </div>
         )}
       </td>
       <td className="column-modified d-none d-xl-table-cell col-xl-3">
