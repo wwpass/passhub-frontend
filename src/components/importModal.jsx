@@ -183,7 +183,7 @@ class ImportModal extends Component {
           >
             <b>Supports:</b> KeePass&nbsp;2.x&nbsp;XML, KeePassX&nbsp;CSV,
             Chrome&nbsp;passwords&nbsp;CSV, Firefox&nbsp;passwords&nbsp;CSV,
-            Lastpass&nbsp;CSV
+            Lastpass&nbsp;CSV, DashLane&nbsp;CSV
           </div>
           <div style={{ marginBottom: 0 }}>
             {[

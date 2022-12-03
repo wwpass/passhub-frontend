@@ -5,6 +5,7 @@ import { getApiUrl, getVerifier } from "../lib/utils";
 import Card from "react-bootstrap/Card";
 
 import InviteDiv from "./inviteDiv";
+//import UserTable from "./userTableF";
 import UserTable from "./userTableF";
 import DelUserModal from "./delUserModal";
 
@@ -124,7 +125,10 @@ class UserManagementPage extends Component {
     }
 
     return (
-      <Card className="col" style={{ padding: 0, borderRadius: "16px" }}>
+      <Card
+        className="col"
+        style={{ padding: 0, borderRadius: "16px", height: "100%" }}
+      >
         <Card.Header
           style={{ display: "flex", justifyContent: "space-between" }}
         >
@@ -141,7 +145,7 @@ class UserManagementPage extends Component {
             </svg>
           </button>
         </Card.Header>
-        <Card.Body>
+        <Card.Body style={{ display: "flex", flexDirection: "column" }}>
           {this.state.errorMsg.length > 0 ? (
             <div style={{ fontSize: "32px", color: "red" }}>
               {this.state.errorMsg}

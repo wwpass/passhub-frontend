@@ -97,19 +97,3 @@ class PlanStorageLimitsReacheModal extends Component {
 }
 
 export default PlanStorageLimitsReacheModal;
-
-/*
-
-          <InputField
-            value={this.state.discount}
-            id="upgrade-discount"
-            label="Discount"
-            onChange={this.onDiscountChange}
-            edit
-          >
-            <Button variant="primary" type="button" onClick={this.onApply}>
-              Apply
-            </Button>
-          </InputField>
-
-          */
