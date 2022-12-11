@@ -3,7 +3,8 @@ import UserRecord from "./userRecord";
 
 function UserTable(props) {
   return (
-    <div style={{ overflowY: "auto" }}>
+
+  <div className="tableFixHead">
       <table className="iam_table">
         <thead style={{ background: "rgba(27,27,38,.86)", color: "white" }}>
           <tr>
@@ -36,6 +37,9 @@ function UserTable(props) {
         <tbody>
           {props.users.map((u) => {
             const me = u._id === props.me;
+            if(!u.email.includes(props.searchString)) {
+              return null;
+            }
             return (
               <UserRecord
                 key={u.email}
@@ -48,7 +52,7 @@ function UserTable(props) {
           })}
         </tbody>
       </table>
-    </div>
+    </div> 
   );
 }
 

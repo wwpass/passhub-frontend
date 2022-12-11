@@ -1441,6 +1441,52 @@ textarea:focus {
   margin: 7px 0;
 }
 
+.tableFixHead {
+  overflow-y: auto;
+}
+
+.tableFixHead .table {
+  position: relative;
+}
+
+.tableFixHead thead th {
+  position: sticky;
+  background: rgb(27,27,38);
+  top:0;
+}
+
+/*
+.fixTableHead {
+  overflow-y: auto;
+  height: 110px;
+}
+.fixTableHead thead th {
+  position: sticky;
+  top: 0;
+}
+
+*/
+
+/*
+.tableFixHead {
+  width: 500px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+  .tableFixHead tbody {
+  display: block;
+  width: 100%;
+  overflow: auto;
+  height: 50px;
+}
+.tableFixHead thead tr {
+  display: block;
+}
+
+*/
+
+
+
 
 /*
 .custom-scroll::-webkit-scrollbar {
