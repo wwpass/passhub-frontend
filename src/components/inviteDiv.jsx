@@ -56,7 +56,13 @@ class InviteDiv extends Component {
   };
 
   render() {
+
+    let licensed = this.props.licensedUsers ? <><br></br><span> licensed users: {this.props.licensedUsers}</span></> : null;
+    let users = <span>users: {this.props.users.length}</span>;
+
     return (
+
+
       <div
         style={{
           background: "#eee",
@@ -65,7 +71,14 @@ class InviteDiv extends Component {
           justifyContent: "space-between",
         }}
       >
-        <span style={{ color: "red" }}>{this.state.errorMsg}</span>
+          <div style={{display:"none"}}>
+            {users}
+            {licensed}
+          </div>
+
+          <span style={{ color: "red" }}>{this.state.errorMsg}</span>
+
+
         <div style={{ display: "flex", alignItems: "center" }}>
           Authorize
           <input
