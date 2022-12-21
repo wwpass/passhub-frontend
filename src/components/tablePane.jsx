@@ -376,14 +376,14 @@ class TablePane extends Component {
               <table className="item_table">
                 <thead>
                   <tr className="d-flex">
-                    <th className="d-none d-sm-table-cell col-sm-12 col-md-6 col-lg-4 col-xl-3">
+                    <th className="d-none d-sm-table-cell col-sm-12 col-md-6 col-lg-4 col-xl-3" style={{paddinLeft:0}}>
                       Title
                     </th>
+                    <th className="d-none d-xl-table-cell                             col-xl-3"></th>
                     <th className="d-none d-md-table-cell           col-md-6 col-lg-4 col-xl-3"></th>
-                    <th className="d-none d-lg-table-cell                    col-lg-4 col-xl-3"></th>
-                    <th className="d-none d-xl-table-cell                             col-xl-3 column-modified">
+                    <th className="d-none d-lg-table-cell                    col-lg-4 col-xl-3 column-modified">
                       Modified
-                    </th>
+                      </th>
                   </tr>
                 </thead>
                 <tbody>

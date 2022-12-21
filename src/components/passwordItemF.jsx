@@ -71,11 +71,11 @@ function PasswordItem(props) {
           </div>
         )}
       </td>
-      <td className="d-none d-md-table-cell           col-md-6 col-lg-4 col-xl-3">
+      <td className="d-none d-xl-table-cell                  col-xl-3">
         {item.cleartext[1]}
       </td>
       <td
-        className="d-none d-lg-table-cell                    col-lg-4 col-xl-3 login-item-link "
+        className="d-none d-md-table-cell                    col-md-6 col-lg-4 col-xl-3 login-item-link "
         onClick={() => {
           openInExtension(props.item);
         }}
@@ -85,7 +85,7 @@ function PasswordItem(props) {
       >
         {link_text}
       </td>
-      <td className="d-none d-xl-table-cell                             col-xl-3 column-modified">
+      <td className="d-none d-lg-table-cell                 col-lg-4 col-xl-3 column-modified">
         {lastModified(item)}
       </td>
     </tr>

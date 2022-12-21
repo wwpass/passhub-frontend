@@ -46,7 +46,7 @@ function NoteItem(props) {
           </div>
         )}
       </td>
-      <td className="column-modified d-none d-xl-table-cell col-xl-3">
+      <td className="d-none d-lg-table-cell                 col-lg-4 col-xl-3 column-modified">
         {lastModified(item)}
       </td>
     </tr>

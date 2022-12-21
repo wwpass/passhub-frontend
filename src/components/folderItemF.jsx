@@ -63,7 +63,7 @@ function FolderItem(props) {
           {angleIcon}
         </div>
       </td>
-      <td className="column-modified d-none d-xl-table-cell col-xl-3">
+      <td className="d-none d-lg-table-cell                 col-lg-4 col-xl-3 column-modified">
         {lastModified(props.item)}
       </td>
     </tr>

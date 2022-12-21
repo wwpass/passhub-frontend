@@ -23,7 +23,7 @@ function FileItem(props) {
         id={`drag${item._id}`}
         onDragStart={dragStart}
         colSpan="2"
-        className="col-md-12 col-lg-8 col-xl-6"
+        className="col-sm-12 col-md-6 col-lg-4 col-xl-6"
         onClick={showModal}
         style={{ cursor: "pointer" }}
       >
@@ -44,10 +44,10 @@ function FileItem(props) {
           </div>
         )}
       </td>
-      <td className="rightAlign d-none d-lg-table-cell col-lg-4 col-xl-3">
+      <td className="d-none d-md-table-cell        col-md-6 col-lg-4 col-xl-3 rightAlign">
         {humanReadableFileSize(item.file.size)}
       </td>
-      <td className="column-modified d-none d-xl-table-cell col-xl-3">
+      <td className="d-none d-lg-table-cell                 col-lg-4 col-xl-3 column-modified">
         {lastModified(item)}
       </td>
     </tr>
