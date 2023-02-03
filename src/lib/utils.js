@@ -1,3 +1,4 @@
+import axios from "axios";
 import { updateTicket } from 'wwpass-frontend';
 
 function keepTicketAlive(ttl, age) {
@@ -22,18 +23,19 @@ function keepTicketAlive(ttl, age) {
 }
 
 function serverLog(msg) {
-  /*
-  $.ajax({
-    url: 'serverlog.php',
-    type: 'POST',
-    data: {
-    //  verifier: csrf,
-      msg,
-    },
-    error: () => {},
-    success: () => {},
-  });
-  */
+  const data = {
+    verifier: getVerifier(),
+    msg
+  };
+
+  axios
+  .post(`${getApiUrl()}serverlog.php`, data)
+  .then(reply => {
+    // do nothig, one way  
+  })
+  .catch(err => {
+    // do nothig, one way  
+  })
 }
 
 //https://en.wikipedia.org/wiki/List_of_the_most_common_passwords
@@ -215,13 +217,13 @@ function getWsUrl() {
   return wsUrl;
 }
 
-
 function getHostname() {
-  let serverUrl = apiUrl;
-  if(apiUrl === './') {
-    serverUrl = window.location.href;
+  let serverUrlObject;
+  try {
+    serverUrlObject = new URL(apiUrl);
+  } catch(err) {
+    serverUrlObject = new URL(window.location.href);
   }
-  let serverUrlObject = new URL(serverUrl);
   return serverUrlObject.hostname;
 }
 

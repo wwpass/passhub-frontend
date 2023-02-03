@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
-import { getApiUrl, getVerifier } from "../lib/utils";
+import { getApiUrl, getVerifier, serverLog } from "../lib/utils";
 import AccountDropDown from "./accountDropDown";
 import ContactUsModal from "./contactUsModal";
 import MessageModal from "./messageModal";
@@ -11,15 +11,25 @@ import VerifyEmailModal from "./verifyEmailModal";
 import DeleteAccountModal from "./deleteAccountModal";
 import DeleteAccountFinalModal from "./deleteAccountFinalModal";
 
+let wrongOrigin = 0;
+
+
 class NavSpan extends Component {
   state = { showModal: "", accountData: {} };
 
   init = window.addEventListener(
     "message",
     (event) => {
-      if (event.data === "payment_success") {
-        // console.log("Message event");
-        // console.log(event);
+      if(event.origin !== window.location.origin) {
+        if(wrongOrigin < 5) {
+          // report warning to the server, however harmless in our case
+          serverLog(`"payment_success" message orign ${event.origin}`)
+          wrongOrigin++;
+        }
+        console.log(`"payment_succes" message origin ${event.origin}`);
+        return;
+      }
+      if (event.data == "payment_success") {
         this.getAccountData();
       }
     },
