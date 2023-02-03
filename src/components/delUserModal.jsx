@@ -44,7 +44,7 @@ class DelUserModal extends Component {
       <Modal show={this.props.data.show} onHide={this.closeModal}>
         <ModalCross onClose={this.closeModal}></ModalCross>
         <div className="modalTitle">
-          <div className="h2">Delete User</div>
+          <div className="h2">Delete User Account</div>
         </div>
 
         <Modal.Body>
