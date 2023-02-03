@@ -10,6 +10,7 @@ import {
   getWsUrl,
   getVerifier,
   setUserData,
+  serverLog
 } from "../lib/utils";
 import * as extensionInterface from "../lib/extensionInterface";
 
@@ -402,13 +403,15 @@ class MainPage extends Component {
                 keepTicketAlive(data.WWPASS_TICKET_TTL, data.ticketAge);
               });
             })
-            .catch((err) => {
+            
+            .catch(err => {
               if (window.location.href.includes("debug")) {
                 alert(`387: ${err}`);
                 return;
               }
               window.location.href = `error_page.php?js=387&error=${err}`;
             });
+            
         }
         if (result.data.status === "login") {
           window.location.href = "expired.php";
@@ -416,10 +419,12 @@ class MainPage extends Component {
           return;
         }
       })
+      
       .catch((error) => {
         progress.unlock();
         console.log(error);
       });
+      
   };
 
   pageDataLoaded = false;
@@ -466,6 +471,27 @@ class MainPage extends Component {
     folders: [],
     items: [],
   };
+
+  searchFolders(what) {
+    const result = [];
+    const lcWhat = what.toLowerCase();
+    for (const safe of this.state.safes) {
+      if (safe.key) {
+        // key!= null => confirmed, better have a class
+        for (const folder of safe.rawFolders) {
+          if (folder.cleartext[0].toLowerCase().indexOf(lcWhat) >= 0) {
+            result.push(folder);
+          }
+        }
+      }
+    }
+
+    result.sort((a, b) =>
+      a.cleartext[0].toLowerCase().localeCompare(b.cleartext[0].toLowerCase())
+    );
+    return result;
+  }
+
 
   search(what) {
     const result = [];
@@ -650,6 +676,7 @@ class MainPage extends Component {
     const searchString = this.props.searchString.trim();
     if (searchString.length > 0) {
       this.searchFolder.items = this.search(searchString);
+      this.searchFolder.folders = this.searchFolders(searchString);
 
       const safePane = document.querySelector("#safe_pane");
 

@@ -62,6 +62,12 @@ function FolderItem(props) {
           {props.item.cleartext[0]}
           {angleIcon}
         </div>
+        {props.searchMode && (
+          <div className="search-path">
+            {props.item.path.map((e) => e[0]).join(" > ")}
+          </div>
+        )}
+
       </td>
       <td className="d-none d-lg-table-cell                 col-lg-4 col-xl-3 column-modified">
         {lastModified(props.item)}
