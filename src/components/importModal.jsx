@@ -12,12 +12,16 @@ import importMerge from "../lib/importMerge";
 import { createSafeFromFolder } from "../lib/crypto";
 import progress from "../lib/progress";
 
+let bindedSetState;
+
+
 class ImportModal extends Component {
   state = {
     mode: "new safe",
     errorMsg: "",
     theFile: null,
   };
+
   isShown = false;
 
   handleModeChange = (e) => {
@@ -64,8 +68,14 @@ class ImportModal extends Component {
 
   onSubmit = () => {
     const theFile = this.state.theFile;
+
+
+    // not used  
+    bindedSetState = this.setState.bind(this);
+
+
     if (!theFile) {
-      this.setState({ errorMsg: "Please select backup file" });
+      this.setState({ errorMsg: "Please select a backup file" });
       return;
     }
     const extension = theFile.name.split(".").pop().toLowerCase();
@@ -96,18 +106,33 @@ class ImportModal extends Component {
         } else {
           imported.name = theFile.name;
           imported.entries = [];
-          imported.folders = importCSV(text);
+          const importResult = importCSV(text);
+          if(typeof(importResult) == 'string') {
+            progress.unlock();
+            console.log('Import result ' + importResult);
+            this.setState({ errorMsg: importResult });
+
+            // bindedSetState({ errorMsg: importResult });
+            return;
+          }
+          imported.folders = importResult;
         }
       } catch (err) {
         progress.unlock();
-        this.setState({ errorMsg: err });
+        bindedSetState({ errorMsg: err });
         return;
       }
 
       console.log(imported);
 
       if (this.state.mode !== "restore") {
-        const importedSafe = createSafeFromFolder(imported);
+        let importedSafe;
+        if( (imported.folders.length == 1) && (imported.folders[0].name == 'lastpass')) {
+          imported.folders[0].name = imported.name;
+          importedSafe = createSafeFromFolder(imported.folders[0]);
+        } else {
+          importedSafe = createSafeFromFolder(imported);
+        }
         console.log(importedSafe);
         this.uploadImportedData([importedSafe]);
       } else {
