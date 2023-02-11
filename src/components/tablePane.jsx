@@ -345,6 +345,26 @@ class TablePane extends Component {
             )}
           </div>
 
+{/*
+
+          <div
+            className="d-none d-sm-block"
+            style={{ 
+              color: "#1B1B26",
+              marginBottom: "28px",
+              
+               }}
+          >
+            <div style='display:"flex", overflowX:"clip",
+              textOverflow:"ellipsis",
+              whiteSpace:"nowrap"'>
+              <div>{pathString}</div>
+              
+              <b>{folder.path[folder.path.length - 1][0]}</b>
+            </div>
+          </div>
+              */}
+
           <div
             className="d-none d-sm-block"
             style={{ color: "#1B1B26", marginBottom: "28px" }}
@@ -352,6 +372,8 @@ class TablePane extends Component {
             {pathString}
             <b>{folder.path[folder.path.length - 1][0]}</b>
           </div>
+
+
 
           {emptyFolder && (
             <div>
@@ -389,8 +411,9 @@ class TablePane extends Component {
                 <tbody>
                   {folder.folders.map((f) => (
                     <FolderItem
-                      key={`folder${f._id}`}
                       item={f}
+                      key={`folder${f._id}`}
+                      searchMode={this.props.searchMode}
                       dropItem={this.props.dropItem}
                       onClick={(folder) => {
                         this.openFolder(folder);
