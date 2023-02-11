@@ -69,7 +69,7 @@ class App extends Component {
     this.setState({accountData:data})
   }
   onSearchStringChange = searchString => {
-    this.setState({searchString:searchString.trim()})
+    this.setState({searchString: searchString.trim()})
   }
   onAccountMenuCommand = cmd => {
     this.mainPageRef.current.onAccountMenuCommand(cmd);

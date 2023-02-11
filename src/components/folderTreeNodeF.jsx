@@ -111,7 +111,7 @@ function FolderTreeNode(props) {
             display: "flex",
           }}
         >
-          <div>
+          <div style={{display:"flex", flexWrap:"nowrap"}}>
             {angleIcon}
             {icon}
           </div>
@@ -121,6 +121,7 @@ function FolderTreeNode(props) {
               flexGrow: 1,
               overflow: "hidden",
               textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {props.node.name}

@@ -1443,6 +1443,7 @@ textarea:focus {
 
 .tableFixHead {
   overflow-y: auto;
+  min-height: 350px;
 }
 
 .tableFixHead .table {

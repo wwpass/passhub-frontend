@@ -278,7 +278,7 @@ class BankCardModal extends Component {
 
     let expDate = "";
     if (this.state.ccExpMonth !== "" && this.state.ccExpYear !== "") {
-      expDate = `${this.state.ccExpMonth}/${this.state.ccExpYear.substring(2)}`;
+      expDate = `${this.state.ccExpMonth}/${this.state.ccExpYear.slice(-2)}`;
     }
     /*
     const path = this.props.args.folder

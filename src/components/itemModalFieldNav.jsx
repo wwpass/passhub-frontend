@@ -20,7 +20,7 @@ class ItemModalFieldNav extends Component {
       );
     } else if (this.props.gotowebsite) {
       clickAction = (
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
           <div className="iconTitle">Go to website</div>
           <div className="gotowebsite"></div>
         </div>
