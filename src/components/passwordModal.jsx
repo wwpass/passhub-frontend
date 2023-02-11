@@ -23,6 +23,8 @@ import PlanLimitsReachedModal from "./planLimitsReachedModal";
 import Eye from "./eye";
 import GeneratePasswordModal from "./generatePasswordModal";
 
+import PasswordModalUrl from "./passwordModalUrl";
+
 function drawTotpCircle() {
   const sec = new Date().getTime() / 1000;
   const fract = Math.ceil(((sec % 30) * 10) / 3);
@@ -597,6 +599,42 @@ class PasswordModal extends Component {
           </div>
         </div>
 
+        <PasswordModalUrl 
+            item={this.props.args.item} 
+            edit={this.state.edit} 
+            url={this.state.url} 
+            onUrlChange = {this.onUrlChange}
+            showSecondaryUrl = {false}
+          ></PasswordModalUrl>
+
+        {this.state.urlWarning && this.state.urlWarning.length > 0 && (
+          <div style={{ color: "red" }}>{this.state.urlWarning}</div>
+        )}
+
+        {totp}
+
+        <GeneratePasswordModal
+          show={this.state.showModal == "GeneratePasswordModal"}
+          onClose={(dummy, newPassword) => {
+            this.setState({ showModal: "" });
+            if (newPassword) {
+              this.setState({ password: newPassword });
+            }
+          }}
+        ></GeneratePasswordModal>
+      </ItemModal>
+    );
+  }
+}
+
+export default PasswordModal;
+
+
+
+
+
+/*  now in PasswordModalUrl:
+
         <div
           className="itemModalField"
           style={{ display: "flex", position: "relative", marginBottom: 32 }}
@@ -667,24 +705,5 @@ class PasswordModal extends Component {
             </div>
           )}
         </div>
-        {this.state.urlWarning && this.state.urlWarning.length > 0 && (
-          <div style={{ color: "red" }}>{this.state.urlWarning}</div>
-        )}
 
-        {totp}
-
-        <GeneratePasswordModal
-          show={this.state.showModal == "GeneratePasswordModal"}
-          onClose={(dummy, newPassword) => {
-            this.setState({ showModal: "" });
-            if (newPassword) {
-              this.setState({ password: newPassword });
-            }
-          }}
-        ></GeneratePasswordModal>
-      </ItemModal>
-    );
-  }
-}
-
-export default PasswordModal;
+            */
