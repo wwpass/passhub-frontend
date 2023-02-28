@@ -202,6 +202,7 @@ class TablePane extends Component {
   onItemModalClose = (refresh = false) => {
     this.setState({ showModal: "" });
     if (refresh === true) {
+/*
       if (this.props.searchMode) {
         const folderID =
           this.state.itemModalArgs.item.folder != 0 // not !== intentionally, better have it "0"
@@ -209,6 +210,7 @@ class TablePane extends Component {
             : this.state.itemModalArgs.item.SafeID;
         this.props.setActiveFolder(folderID);
       }
+*/
       this.props.refreshUserData({
         safes: [this.state.itemModalArgs.safe.id],
       });
