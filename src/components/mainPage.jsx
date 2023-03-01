@@ -313,7 +313,9 @@ class MainPage extends Component {
             progress.unlock();
 
             this.setState(data);
-            this.setActiveFolder(activeFolder);
+            if(this.props.searchString.trim().length === 0) {
+              this.setActiveFolder(activeFolder);
+            }
           });
           return;
         }
