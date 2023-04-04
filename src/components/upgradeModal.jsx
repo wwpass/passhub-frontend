@@ -21,6 +21,17 @@ class UpgradeModal extends Component {
     });
   };
 
+  getPlans = ()  => {
+    axios
+      .get(`${getApiUrl()}payments/plans.php`)
+      .then(reply => {
+        const result = reply.data;
+        console.log(result);
+        if (result.status === "Ok") {
+        }
+      });
+  }
+
   onApply = (e) => {
     if (this.state.discount.trim().length == 0) {
       return;
@@ -75,6 +86,7 @@ class UpgradeModal extends Component {
           discount: "",
           showDiscountInput: true,
         });
+        this.getPlans();
       }
     } else {
       this.isShown = false;
@@ -100,12 +112,19 @@ class UpgradeModal extends Component {
               Your <b>FREE</b> account is limited to 200 records, 100 MB
               storage, and 10 MB file size
             </p>
-            <p>
-              Get <span style={{ fontWeight: "normal" }}>unlimited</span>{" "}
-              records, <span style={{ fontWeight: "normal" }}>1GB</span> of
-              storage space, and 50 MB files with <b>PREMIUM</b> plan for only
-              $4 per month ($48 per year).
-            </p>
+            <p>Get <b>PREMIUM</b> plan</p>
+            <ul>
+              <li>unlimited records</li>
+              <li>10 GB of storage space</li>
+              <li>50 MB max file size</li>
+            </ul>
+            <p>for only</p> 
+            <div>
+              <span style={{fontSize: "36px", fontWeight: 700}}> $2.91</span><b>/month</b>.
+            </div>
+            <div style={{color: "grey"}}>
+              $34.90 billed annualy
+            </div>
           </div>
 
           {this.state.showDiscountInput && (
