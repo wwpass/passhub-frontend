@@ -20,18 +20,43 @@ class NavSpan extends Component {
   init = window.addEventListener(
     "message",
     (event) => {
+      console.log('got message');
+      console.log(event);
+
       if(event.origin !== window.location.origin) {
         if(wrongOrigin < 5) {
           // report warning to the server, however harmless in our case
-          serverLog(`"payment_success" message orign ${event.origin}`)
+          serverLog(`payment message orign ${event.origin}`)
           wrongOrigin++;
         }
-        console.log(`"payment_succes" message origin ${event.origin}`);
+        console.log(`payment message origin ${event.origin}`);
         return;
       }
       if (event.data == "payment_success") {
-        this.getAccountData();
+          this.getAccountData();
       }
+
+      if (event.data == "payment_cancel") {
+        serverLog("Payment cancel");
+
+        axios
+        .post(`${getApiUrl()}payments/session_cancel.php`, {verifier: getVerifier()})
+        .then((reply) => {
+          const result = reply.data;
+          if (result.status === "Ok") {
+            return;
+          }
+          if (result.status === "login") {
+            window.location.href = "expired.php";
+            return;
+          }
+          return;
+        })
+        .catch((err) => {
+          this.setState({ errorMsg: "Server error. Please try again later" });
+        });
+      }
+
     },
     false
   );
@@ -79,7 +104,6 @@ class NavSpan extends Component {
   };
 
   handleMenuCommand = (cmd) => {
-    console.log("handleMenuCommand ", cmd);
     if (cmd === "Contact us") {
       this.setState({ showModal: "Contact us" });
       return;
