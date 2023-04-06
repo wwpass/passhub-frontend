@@ -102,10 +102,23 @@ class AccountModal extends Component {
             {(accountData.autorenew || accountData.receipt_url) &&  (
               <div style={{marginTop: "1em", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "2em;", marginTop: "2em"}}>
                 <div>
-                  { accountData.receipt_url && (
-                    <a href={accountData.receipt_url} style={{color: "#007b40"}} target='_blank'>Your latest payment receipt</a>
-                  )}
+                  <div>
+                    { accountData.receipt_url && (
+                      <a href={accountData.receipt_url} style={{color: "#007b40"}} target='_blank'>Your latest payment receipt</a>
+                    )}
+                  </div>
+                  <div>
+                    { accountData.autorenew && (
+                      <a href="#"  onClick={() => {
+                        window.open("payments/update_card.php", "passhub_payment");
+                        this.props.onClose();
+                      }}
+                      style={{color: "#007b40"}} >Update your card data</a>
+                    )}
+                  </div>
                 </div>
+
+
                 <div>
                   { accountData.autorenew && (
                     <button className="btn btn-danger" onClick={this.cancelSubscription}>Cancel Subscription</button>
