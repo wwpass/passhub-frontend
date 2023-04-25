@@ -3,10 +3,12 @@ import React, { Component } from "react";
 import axios from "axios";
 
 import * as passhubCrypto from "../lib/crypto";
-import { getApiUrl, getVerifier, atRecordsLimits } from "../lib/utils";
+import { getApiUrl, getVerifier, getUserData, atRecordsLimits } from "../lib/utils";
 
 import ItemModal from "./itemModal";
-import PlanLimitsReachedModal from "./planLimitsReachedModal";
+// import PlanLimitsReachedModal from "./planLimitsReachedModal";
+import UpgradeModal from "./upgradeModal";
+
 
 class NoteModal extends Component {
   state = {
@@ -79,11 +81,21 @@ class NoteModal extends Component {
     if (typeof this.props.args.item == "undefined") {
       if (atRecordsLimits()) {
         return (
+          <UpgradeModal
+            show={this.props.show}
+            accountData={getUserData()}
+            onClose={this.props.onClose}
+          ></UpgradeModal>
+        );
+/*
+        
+        return (
           <PlanLimitsReachedModal
             show={this.props.show}
             onClose={this.props.onClose}
           ></PlanLimitsReachedModal>
         );
+*/        
       }
     }
 

@@ -9,6 +9,7 @@ import {
   isStrongPassword,
   getApiUrl,
   getVerifier,
+  getUserData,
   limits,
   atRecordsLimits,
 } from "../lib/utils";
@@ -19,7 +20,11 @@ import { copyToClipboard } from "../lib/copyToClipboard";
 import ItemModalFieldNav from "./itemModalFieldNav";
 
 import ItemModal from "./itemModal";
-import PlanLimitsReachedModal from "./planLimitsReachedModal";
+
+// import PlanLimitsReachedModal from "./planLimitsReachedModal";
+import UpgradeModal from "./upgradeModal";
+
+
 import Eye from "./eye";
 import GeneratePasswordModal from "./generatePasswordModal";
 
@@ -285,12 +290,23 @@ class PasswordModal extends Component {
 
     if (typeof this.props.args.item == "undefined") {
       if (atRecordsLimits()) {
+
+        return (
+          <UpgradeModal
+            show={this.props.show}
+            accountData={getUserData()}
+            onClose={this.props.onClose}
+          ></UpgradeModal>
+        );
+
+/*        
         return (
           <PlanLimitsReachedModal
             show={this.props.show}
             onClose={this.props.onClose}
           ></PlanLimitsReachedModal>
         );
+*/        
       }
     }
 

@@ -7,7 +7,9 @@ import axios from "axios";
 import ModalCross from "./modalCross";
 import ItemModalFieldNav from "./itemModalFieldNav";
 
-import PlanLimitsReachedModal from "./planLimitsReachedModal";
+// import PlanLimitsReachedModal from "./planLimitsReachedModal";
+import UpgradeModal from "./upgradeModal";
+
 import PlanStorageLimitsReachedModal from "./planStorageLimitsReachedModal";
 
 import progress from "../lib/progress";
@@ -36,11 +38,11 @@ class CreateFileModal extends React.Component {
       errorMsg: "",
     });
 
-    if (e.target.files[0].size > getUserData().MAX_FILE_SIZE) {
+    if (e.target.files[0].size > getUserData().maxFileSize) {
       this.setState({
         errorMsg: `File too large: ${humanReadableFileSize(
           e.target.files[0].size
-        )}, max ${humanReadableFileSize(getUserData().MAX_FILE_SIZE)}`,
+        )}, max ${humanReadableFileSize(getUserData().maxFileSize)}`,
       });
       return;
     }
@@ -55,11 +57,11 @@ class CreateFileModal extends React.Component {
       this.setState({ errorMsg: "No file defined" });
       return;
     }
-    if (this.state.theFile.size > getUserData().MAX_FILE_SIZE) {
+    if (this.state.theFile.size > getUserData().maxFileSize) {
       this.setState({
         errorMsg: `File too large: ${humanReadableFileSize(
           this.state.theFile.size
-        )}, max ${humanReadableFileSize(getUserData().MAX_FILE_SIZE)}`,
+        )}, max ${humanReadableFileSize(getUserData().maxFileSize)}`,
       });
       return;
     }
@@ -205,11 +207,20 @@ class CreateFileModal extends React.Component {
 
     if (atRecordsLimits()) {
       return (
+        <UpgradeModal
+          show={this.props.show}
+          accountData={getUserData()}
+          onClose={this.props.onClose}
+        ></UpgradeModal>
+      );
+      /*      
+      return (
         <PlanLimitsReachedModal
           show={this.props.show}
           onClose={this.props.onClose}
         ></PlanLimitsReachedModal>
       );
+      */
     }
 
     if (atStorageLimits()) {
