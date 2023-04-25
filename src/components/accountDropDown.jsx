@@ -99,7 +99,7 @@ class AccountDropDown extends Component {
         >
           <div style={{ marginBottom: "16px" }}>
             {accountData.email && <div>{accountData.email}</div>}
-            {accountData.upgrade_button && (
+            {('upgrade' in accountData) && (
               <div
                 style={{
                   fontSize: "13px",
@@ -169,7 +169,7 @@ class AccountDropDown extends Component {
             <div style={{ marginBottom: "24px" }}>{storage}</div>
           )}
 
-          {accountData.upgrade_button && (
+          {('upgrade' in accountData) && (
             <div>
               <button
                 className="btn btn-primary upgrade-button"
