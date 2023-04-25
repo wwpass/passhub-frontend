@@ -259,10 +259,10 @@ function totalRecords() {
 }
 
 function atRecordsLimits() {
-  if(isNaN(account.MAX_RECORDS)) {
+  if(isNaN(account.maxRecords)) {
     return false;
   }
-  return  totalRecords() >= account.MAX_RECORDS;
+  return  totalRecords() >= account.maxRecords;
 }
 
 function totalStorage() {
@@ -278,12 +278,11 @@ function totalStorage() {
 }
 
 function atStorageLimits() {
-  if(isNaN(account.MAX_STORAGE)) {
+  if(isNaN(account.maxStorage)) {
     return false;
   }
   const s = totalStorage();
-  return  s >= account.MAX_STORAGE
-  //return  totalStorage() >= account.MAX_STORAGE;
+  return  s >= account.maxStorage;
 }
 
 
