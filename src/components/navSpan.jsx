@@ -261,6 +261,7 @@ class NavSpan extends Component {
             </MessageModal>
             <UpgradeModal
               show={this.state.showModal === "upgrade"}
+              accountData={this.state.accountData}
               onClose={() => {
                 this.setState({ showModal: "" });
               }}
