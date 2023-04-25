@@ -32,12 +32,12 @@ class PlanStorageLimitsReacheModal extends Component {
     const message = upgrade ? (
       <p>
         Maximum storage size for your <b>{account.plan}</b> plan is{" "}
-        <b>{humanReadableFileSize(account.MAX_STORAGE)}</b>. You have alreaady
+        <b>{humanReadableFileSize(account.maxStorage)}</b>. You have alreaady
         used <b>{humanReadableFileSize(totalStorage())}</b>.
       </p>
     ) : (
       <p>
-        Maximum storage size is {humanReadableFileSize(account.MAX_STORAGE)}.
+        Maximum storage size is {humanReadableFileSize(account.maxStorage)}.
         You already have <b>{humanReadableFileSize(totalStorage())}</b>.
       </p>
     );
