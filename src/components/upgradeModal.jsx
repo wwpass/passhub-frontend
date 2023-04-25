@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import ItemModalFieldNav from "./itemModalFieldNav";
-import { getApiUrl, getVerifier } from "../lib/utils";
+import { getApiUrl, getVerifier, totalStorage, totalRecords, atStorageLimits, atRecordsLimits, humanReadableFileSize } from "../lib/utils";
 
 import ModalCross from "./modalCross";
 
@@ -21,6 +21,7 @@ class UpgradeModal extends Component {
     });
   };
 
+  /*
   getPlans = ()  => {
     axios
       .get(`${getApiUrl()}payments/plans.php`)
@@ -31,6 +32,7 @@ class UpgradeModal extends Component {
         }
       });
   }
+  */;
 
   onApply = (e) => {
     if (this.state.discount.trim().length == 0) {
@@ -74,6 +76,17 @@ class UpgradeModal extends Component {
       });
   };
 
+  sizeLimits = (size) => {
+    if(size == 0) return "0";
+    if (size < 1024) return `${size} B`;
+    const i = Math.floor(Math.log(size) / Math.log(1024));
+    let num = (size / Math.pow(1024, i));
+    const round = Math.round(num);
+//      num = round < 10 ? num.toFixed(2) : round < 100 ? num.toFixed(1) : round
+    return `${round} ${'KMGTPEZY'[i-1]}B`;
+  };
+
+
   render() {
     if (this.props.show) {
       if (!this.isShown) {
@@ -84,9 +97,10 @@ class UpgradeModal extends Component {
           message: "",
           errorMsg: "",
           discount: "",
-          showDiscountInput: true,
+          showDiscountInput: false,
+//          showDiscountInput: true,
         });
-        this.getPlans();
+//        this.getPlans();
       }
     } else {
       this.isShown = false;
@@ -108,22 +122,37 @@ class UpgradeModal extends Component {
 
         <Modal.Body className="edit" style={{ marginBottom: "24px" }}>
           <div style={{ marginBottom: "32px" }}>
-            <p>
-              Your <b>FREE</b> account is limited to 200 records, 100 MB
-              storage, and 10 MB file size
+           {atStorageLimits() && (
+            <p style={{color: "red"}}>
+                  Maximum storage size for your FREE plan is {this.sizeLimits(this.props.accountData.maxStorage)}. You have alreaady used {humanReadableFileSize(totalStorage())}.
             </p>
-            <p>Get <b>PREMIUM</b> plan</p>
+           )}
+           {atRecordsLimits() && (
+              <p style={{color: "red"}}>
+                  Maximum number of passwords, notes, and bank card records for your{" "}
+                  <b>FREE</b> plan is <b>{this.props.accountData.maxRecords}</b> records. You
+                  already have <b>{totalRecords()}</b> records.              
+              </p>
+           )}
+
+           {!atStorageLimits() && !atRecordsLimits() && (
+            <p>
+              Your <b>FREE</b> account is limited to {this.props.accountData.maxRecords} records,{" "}
+              {this.sizeLimits(this.props.accountData.maxStorage)} storage, and&nbsp;{this.sizeLimits(this.props.accountData.maxFileSize)} file size.
+            </p>
+           )}
+            <p>Get <b>PREMIUM</b> plan for:</p>
             <ul>
               <li>unlimited records</li>
-              <li>10 GB of storage space</li>
-              <li>50 MB max file size</li>
+              <li>{this.sizeLimits(this.props.accountData.upgrade.maxStorage)} of storage space</li>
+              <li>{this.sizeLimits(this.props.accountData.upgrade.maxFileSize)} max file size</li>
             </ul>
             <p>for only</p> 
             <div>
-              <span style={{fontSize: "36px", fontWeight: 700}}> $2.91</span><b>/month</b>.
+              <span style={{fontSize: "36px", fontWeight: 700}}> ${(this.props.accountData.upgrade.price/12).toFixed(2)}</span><b> /month</b>.
             </div>
             <div style={{color: "grey"}}>
-              $34.90 billed annualy
+              ${this.props.accountData.upgrade.price}.00 billed annualy
             </div>
           </div>
 
@@ -155,7 +184,7 @@ class UpgradeModal extends Component {
               </Button>
             </div>
           )}
-          {!this.state.showDiscountInput && (
+          {false && !this.state.showDiscountInput && (
             <div id="price-after-discount">
               You price tag after discount is{" "}
               <span
