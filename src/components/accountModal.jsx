@@ -89,7 +89,7 @@ class AccountModal extends Component {
     if(typeof accountData.expires == "number") {
       let premiumComment = '';
       if(accountData.autorenew) {
-            premiumComment = 'Subscription next autorenew date';
+            premiumComment = 'Subscription next auto-renewal date';
         } else {
             premiumComment = 'expires at';
         }
@@ -113,15 +113,14 @@ class AccountModal extends Component {
                         window.open("payments/update_card.php", "passhub_payment");
                         this.props.onClose();
                       }}
-                      style={{color: "#007b40"}} >Update your card data</a>
+                      style={{color: "#007b40"}} > card data</a>
                     )}
                   </div>
                 </div>
 
-
                 <div>
                   { accountData.autorenew && (
-                    <button className="btn btn-danger" onClick={this.cancelSubscription}>Cancel Subscription</button>
+                    <button className="btn btn-danger" onClick={this.cancelSubscription}>Cancel auto-renew</button>
                   )}
                 </div>
               </div>
@@ -144,11 +143,14 @@ class AccountModal extends Component {
         </div>
 
         <Modal.Body style={{ marginBottom: "24px" }}>
-          <div style={{ marginBottom: 32 }}>
-            Accout type:{" "}
-            <b>{accountType}</b>
-          </div>
-          { (accountData.plan.toUpperCase() == "PREMIUM") && premiumDiv } 
+
+          { !accountData.business && (
+            <div style={{ marginBottom: 32 }}>
+              Accout type:{" "}
+              <b>{accountType}</b>
+            </div>
+          )}
+          { !accountData.business && (accountData.plan.toUpperCase() == "PREMIUM") && premiumDiv } 
 
           <div style={{ margin: "0 0 12px 0" }}>Inactvity timeout</div>
           <div style={{ marginBottom: "64px", padding: "0 32px" }}>
