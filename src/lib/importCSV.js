@@ -329,6 +329,22 @@ function importCSV(text) {
     return safes;
   }
 
+  if ((titles.length === 5) // chrome (at least 112)
+    && (titles[0] === 'name')
+    && (titles[1] === 'url')
+    && (titles[2] === 'username')
+    && (titles[3] === 'password')
+    && (titles[4] === 'note')) {
+        // chrome
+    data.forEach((e) => {
+      if(e.length === 5) {
+        const e1 = ['chrome', e[0], e[2], e[3], e[1], e[4]];
+        addRecord(safes, e1);
+      }
+    });
+    return safes;
+  }
+
   if ((titles.length === 9) // firefox
     && (titles[0] === 'url')
     && (titles[1] === 'username')
