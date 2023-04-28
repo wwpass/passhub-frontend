@@ -29,24 +29,24 @@ function itemStatus(site, backup_item) {
 
 function mergeItems(site, backup) {
   const result = [];
-  for (let b = 0; b < backup.entries.length; b++) {
-    const status = itemStatus(site, backup.entries[b]);
+  for (let b = 0; b < backup.items.length; b++) {
+    const status = itemStatus(site, backup.items[b]);
     if (status === 'absent') {
-      result.push(backup.entries[b]); // cipher
+      result.push(backup.items[b]); // cipher
       continue;
     } else if (status === 'equal') {
       continue;
     }
-    const title = backup.entries[b].cleartext[0];
+    const title = backup.items[b].cleartext[0];
     for (let n = 1; ; n++) {
       if (n > 100) {
         alert('error 601');
         break;
       }
-      backup.entries[b].cleartext[0] = `${title}(${n})`;
-      const status1 = itemStatus(site, backup.entries[b]);
+      backup.items[b].cleartext[0] = `${title}(${n})`;
+      const status1 = itemStatus(site, backup.items[b]);
       if (status1 === 'absent') {
-        result.push(backup.entries[b]); // cipher
+        result.push(backup.items[b]); // cipher
         break;
       }
       if (status1 === 'equal') {
@@ -68,7 +68,7 @@ function mergeFolders(site, backup) {
           const items = mergeItems(site.folders[s], backup.folders[b]);
           const folders = mergeFolders(site.folders[s], backup.folders[b]);
           if ((items.length !== 0) || (folders.length !== 0)) {
-            result.push({ _id: site.folders[s]._id, entries: items, folders }); // add folder name and id
+            result.push({ _id: site.folders[s]._id, items, folders }); // add folder name and id
           }
         }
       }
@@ -103,7 +103,7 @@ function encryptAdditions(safeAdditions, aesKey) {
   for (let f = 0; f < newFolders.length; f++) {
     result.folders.push(encryptFolder(newFolders[f], aesKey));
   }
-  return { id: safeAdditions.id, entries: result.items, folders: result.folders };
+  return { id: safeAdditions.id, items: result.items, folders: result.folders };
 }
 
 function importMerge(importedFolders, flatSafeArray) {

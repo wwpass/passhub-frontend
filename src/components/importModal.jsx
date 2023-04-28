@@ -105,7 +105,7 @@ class ImportModal extends Component {
           imported = importXML(text);
         } else {
           imported.name = theFile.name;
-          imported.entries = [];
+          imported.items = [];
           const importResult = importCSV(text);
           if(typeof(importResult) == 'string') {
             progress.unlock();

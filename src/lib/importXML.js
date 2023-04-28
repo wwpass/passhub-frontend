@@ -128,7 +128,7 @@ function getFolders(group) {
 function importGroup(group) {
   return {
     name: group.Name,
-    entries: getEntries(group),
+    items: getEntries(group),
     folders: getFolders(group),
   };
 }

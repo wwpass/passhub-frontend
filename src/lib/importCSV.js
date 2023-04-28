@@ -101,7 +101,7 @@ function findFolder(folders, path) {
     }
   }
   // not found
-  const folder = { name: path[0], folders: [], entries: [] };
+  const folder = { name: path[0], folders: [], items: [] };
   folders.push(folder);
   if (path.length === 1) {
     return folder;
@@ -112,11 +112,11 @@ function findFolder(folders, path) {
 
 function addRecordToSafe(safe, record, path) {
   if (path.length === 0) {
-    safe.entries.push(record);
+    safe.items.push(record);
     return;
   }
   const folder = findFolder(safe.folders, path);
-  folder.entries.push(record);
+  folder.items.push(record);
 }
 
 
@@ -131,7 +131,7 @@ function addRecord(safes, r, options = {}) {
     }
   }
   // no such safe
-  const safe = { name: path[0], folders: [], entries: [] };
+  const safe = { name: path[0], folders: [], items: [] };
   safes.push(safe);
   path.shift();
   addRecordToSafe(safe, { cleartext: r, options }, path);
