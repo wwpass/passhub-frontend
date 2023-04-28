@@ -19,8 +19,8 @@ function FileItem(props) {
   return (
     <tr className="d-flex" style={{ alignItems: "center" }}>
       <td
-        draggable
         id={`drag${item._id}`}
+        draggable
         onDragStart={dragStart}
         colSpan="2"
         className="col-sm-12 col-md-6 col-lg-4 col-xl-6"
