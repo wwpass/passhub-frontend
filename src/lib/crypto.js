@@ -193,9 +193,9 @@ function getPrivateKeyOld(ePrivateKey, ticket) {
 //     result.name = folder.name;
     result.eName = encryptSafeName(folder.name, aesKey);
     result.version = 3;
-    result.entries = [];
-    for (let e = 0; e < folder.entries.length; e++) {
-      result.entries.push(encryptItem(folder.entries[e].cleartext, aesKey, folder.entries[e].options));
+    result.items = [];
+    for (let e = 0; e < folder.items.length; e++) {
+      result.items.push(encryptItem(folder.items[e].cleartext, aesKey, folder.items[e].options));
     }
     result.folders = [];
     if ('folders' in folder) {
@@ -219,15 +219,30 @@ function getPrivateKeyOld(ePrivateKey, ticket) {
   }
 
   function encryptFolder(folder, aes_key) {
-    const result = { entries: [], folders: [] };
+    const result = { items: [], folders: [] };
     if (folder.hasOwnProperty('name')) { // new, imported
       result.name = encryptFolderName(folder.name, aes_key);
     }
     if (folder.hasOwnProperty('_id')) { // merged, restore
       result._id = folder._id;
     }
-    for (let e = 0; e < folder.entries.length; e++) {
-      result.entries.push(encryptItem(folder.entries[e].cleartext, aes_key, folder.entries[e].options));
+    for (const item of folder.items) {
+      let options = {};
+      if (item.note) {
+        options["note"] = item.note;
+      } else if (item.version === 5) {
+        options["version"] = item.version;
+      }
+
+      if("file" in item) { // only possible when moving Folder
+        let newFileKey = moveFileKey(item, folder.safe.bstringKey, aes_key);
+        const eItem = JSON.parse(encryptItem(item.cleartext, aes_key, {}));
+        eItem.file = Object.assign({}, {...item.file});
+        eItem.file.key = btoa(newFileKey);        
+        result.items.push(JSON.stringify(eItem));
+      } else {
+        result.items.push(encryptItem(item.cleartext, aes_key, options));
+      }      
     }
     for (let f = 0; f < folder.folders.length; f++) {
       result.folders.push(encryptFolder(folder.folders[f], aes_key));
@@ -397,8 +412,8 @@ function getPrivateKeyOld(ePrivateKey, ticket) {
     return eItem;
   }
   
-  function moveFile(item, srcBinaryKey, dstBinaryKey) {
 
+  function moveFileKey(item, srcBinaryKey, dstBinaryKey)  {
     const keyDecipher = forge.cipher.createDecipher('AES-ECB', srcBinaryKey);
     keyDecipher.start({ iv: atob(item.file.iv) }); // any iv goes: AES-ECB
     keyDecipher.update(forge.util.createBuffer(atob(item.file.key)));
@@ -410,16 +425,32 @@ function getPrivateKeyOld(ePrivateKey, ticket) {
     keyCipher.start({ iv: keyIV });
     keyCipher.update(forge.util.createBuffer(fileAesKey));
     keyCipher.finish();
+    return keyCipher.output.data;
+
+  }
+
+  function moveFile(item, srcBinaryKey, dstBinaryKey) {
+    let newFileKey = moveFileKey(item, srcBinaryKey, dstBinaryKey);
+/*    
+    const keyDecipher = forge.cipher.createDecipher('AES-ECB', srcBinaryKey);
+    keyDecipher.start({ iv: atob(item.file.iv) }); // any iv goes: AES-ECB
+    keyDecipher.update(forge.util.createBuffer(atob(item.file.key)));
+    keyDecipher.finish();
+    const fileAesKey = keyDecipher.output.data;
   
+    const keyCipher = forge.cipher.createCipher('AES-ECB', dstBinaryKey);
+    const keyIV = forge.random.getBytesSync(16);
+    keyCipher.start({ iv: keyIV });
+    keyCipher.update(forge.util.createBuffer(fileAesKey));
+    keyCipher.finish();
+*/  
     const pItem = decodeItemGCM(item, srcBinaryKey);
     const eItem = JSON.parse(encryptItem(pItem, dstBinaryKey, {}));
     
     eItem.file = Object.assign({}, {...item.file});
-    eItem.file.key = btoa(keyCipher.output.data);
+    eItem.file.key = btoa(newFileKey);
     return JSON.stringify(eItem);
   }
-
-  
 
 export {
   getPrivateKey,

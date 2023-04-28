@@ -601,6 +601,7 @@ class MainPage extends Component {
   };
 
   doMove = (node, pItem, operation) => {
+
     dropAndPaste
       .doMove(this.state.safes, node, pItem, operation)
       .then((status) => {
@@ -611,7 +612,7 @@ class MainPage extends Component {
         }
         if (status === "no src write") {
           this.setState({
-            showModal: "ImportModal",
+            showModal: "NoRightsModal",
             messageModalArgs: {
               message:
                 'Sorry, "Move" operation is forbidden. You have only read access to the source safe.',
@@ -630,6 +631,8 @@ class MainPage extends Component {
           });
           return;
         }
+        console.log(`Unkown status -${status}-`)
+        return;
       })
       .catch((err) => {
         console.log(err.message);
@@ -654,6 +657,17 @@ class MainPage extends Component {
           });
           return;
         }
+        if (err.message === "drop into child") {
+          this.setState({
+            showModal: "NoRightsModal",
+            messageModalArgs: {
+              message:
+                'Sorry, cannot move to the child folder.',
+            },
+          });
+          return;
+        }
+
       });
   };
 
