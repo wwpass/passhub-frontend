@@ -272,6 +272,7 @@ class FolderNameModal extends Component {
             label="Name"
             value={this.state.name}
             edit
+            autoFocus
             onChange={this.handleChange}
             onKeyUp={this.keyUp}
           ></InputField>
