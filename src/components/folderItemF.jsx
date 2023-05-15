@@ -66,7 +66,7 @@ function FolderItem(props) {
         onDragStart={dragStart}
       >
         <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave}>
-          <svg width="24" height="24" className="itemIcon">
+          <svg width="24" height="24" className="itemIcon" style={{ cursor: "move" }}>
             <use href="#i-folder"></use>
           </svg>
           {props.item.cleartext[0]}
