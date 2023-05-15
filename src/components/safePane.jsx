@@ -29,13 +29,6 @@ class SafePane extends Component {
         exportFolderModalArgs: this.props.safes,
       });
     }
-    /*
-    if (cmd === "Import") {
-      this.setState({
-        showModal: "ImportModal",
-      });
-    }
-    */
   }
 
   onFolderMenuCmd = (node, cmd) => {
@@ -85,25 +78,6 @@ class SafePane extends Component {
     if (!this.props.show) {
       return null;
     }
-    /*
-    if (this.props.activeFolder && this.props.activeFolder.safe) {
-      let parentId = this.props.activeFolder.parent;
-      while (parentId) {
-        if (!this.state.openNodes.has(parentId)) {
-          this.state.openNodes.add(parentId);
-        }
-        const parentNode = getFolderById(
-          this.props.activeFolder.safe.folders,
-          parentId
-        );
-        parentId = parentNode.parent;
-      }
-
-      if (!this.state.openNodes.has(this.props.activeFolder.safe.id)) {
-        this.state.openNodes.add(this.props.activeFolder.safe.id);
-      }
-    }
-*/
 
     return (
       <Col
@@ -132,19 +106,19 @@ class SafePane extends Component {
 
           <div className="safe_scroll_control custom-scroll d-none d-sm-block">
             {this.props.safes.map((s) => (
-              <FolderTreeNode
-                key={s.id}
-                onSelect={this.handleSelect}
-                onOpen={this.props.handleOpenFolder}
-                dropItem={this.props.dropItem}
-                node={s}
-                open={this.props.openNodes.has(s.id) && this.props.openNodes}
-                activeFolder={this.props.activeFolder}
-                isSafe={true}
-                onMenuCmd={this.onFolderMenuCmd}
-                padding={20}
-              />
-            ))}
+                <FolderTreeNode
+                  key={s.id}
+                  onSelect={this.handleSelect}
+                  onOpen={this.props.handleOpenFolder}
+                  dropItem={this.props.dropItem}
+                  node={s}
+                  open={this.props.openNodes.has(s.id) && this.props.openNodes}
+                  activeFolder={this.props.activeFolder}
+                  isSafe={true}
+                  onMenuCmd={this.onFolderMenuCmd}
+                  padding={20}
+                />
+              ))}
           </div>
           <div
             className="add_safe"
