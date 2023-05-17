@@ -202,6 +202,7 @@ class MainPage extends Component {
   constructor(props) {
     super(props);
     this.safePaneRef = React.createRef();
+    this.userDataJustLoaded = false;
 
     extensionInterface.connect(this.advise);
 
@@ -250,8 +251,16 @@ class MainPage extends Component {
       }
       this.setState({ openNodes: openNodesCopy });
     }
-
+    this.userDataJustLoaded = true;
+   
     this.setState({ activeFolder: folder });
+
+    axios
+    .post(`${getApiUrl()}folder_ops.php`, {
+      operation: "current_safe",
+      verifier: getVerifier(),
+      id: folder.SafeID ? folder.SafeID : folder.id,
+    })    
   };
 
   openParentFolder = (folder) => {
@@ -312,6 +321,7 @@ class MainPage extends Component {
             console.log("setting new state with updated data");
             progress.unlock();
 
+            this.userDataJustLoaded = true;
             this.setState(data);
             if(this.props.searchString.trim().length === 0) {
               this.setActiveFolder(activeFolder);
@@ -395,6 +405,7 @@ class MainPage extends Component {
                   console.log("websocket disbled");
                 }
 
+                this.userDataJustLoaded = true;
                 progress.unlock();
                 self.setState(data);
                 if ("goPremium" in data && data.goPremium == true) {
@@ -436,12 +447,40 @@ class MainPage extends Component {
       this.pageDataLoaded = true;
       this.getPageData();
     }
+/*    
+    if(this.userDataJustLoaded) {
+      this.userDataJustLoaded = false;
+      document.querySelector(".active_folder").scrollIntoView();
+    }
+*/    
   }
 
   componentDidUpdate() {
     if (!this.pageDataLoaded && this.props.show) {
       this.pageDataLoaded = true;
       this.getPageData();
+    }
+    console.log("componentDidUpdate");
+    if(this.userDataJustLoaded) {
+      this.userDataJustLoaded = false;
+
+      const activeFolder = document.querySelector(".active_folder");
+      if(!activeFolder) {
+        return;
+      }
+
+      const scrollControl = document.querySelector(".safe_scroll_control.d-none");
+      if(!scrollControl.offsetParent) {
+        return;
+      }
+      
+      const activeFolderRect = activeFolder.getBoundingClientRect();
+      const scrollControlRect = scrollControl.getBoundingClientRect();
+      if (activeFolderRect.bottom > (scrollControlRect.top + scrollControl.scrollTop + scrollControl.offsetHeight)) {
+          activeFolder.scrollIntoView(false);
+      } else if (activeFolderRect.top < (scrollControlRect.top + scrollControl.scrollTop)) {
+        activeFolder.scrollIntoView();
+      } 
     }
   }
 
