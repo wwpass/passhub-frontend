@@ -119,13 +119,16 @@ class CreateFileModal extends React.Component {
         ]
       : [this.props.args.folder.bstringKey, this.props.args.folder.id, 0];
 
+    progress.lock(0, "file upload");
     return uploadFiles( this.state.files, SafeID, folderID, this.state.note, aesKey)
     .then(() => {
+      progress.unlock();      
       console.log("129 uploaded")
       this.props.onClose(true);
       return;
     })
     .catch(err => {
+      progress.unlock();      
       console.log(`upload file promise rejected`);
       console.log(err);
       if(err.message == "login") {
@@ -211,7 +214,7 @@ class CreateFileModal extends React.Component {
                 overflowWrap: "anywhere",
               }}
             >
-              {fileNameArray.map((f) => (<div className="filename" style={{marginBottom:"6px"}}>{f}</div>))}
+              {fileNameArray.map((f) => (<div className="filename" style={{marginBottom:"6px", maxWidth:"330px", overflow: "hidden", whiteSpace:"nowrap", textOverflow:"ellipsis", }}>{f}</div>))}
             </div>
             <Button variant="primary" type="submit" onClick={this.onSubmit} style={{height: "48px", marginTop: ((fileNameArray.length > 1)? "12px": "0") }}>
               Browse
