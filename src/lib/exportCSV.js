@@ -9,11 +9,14 @@ function exportFolder(folder) {
     if (folder.items[i].hasOwnProperty('file')) {
       continue;
     }
+    // bitwarden compatible
+    let urls = folder.items[i].cleartext[3].split('\x01');
+    urls = urls.join(' ');
     csv += fromArrays([[path,
       folder.items[i].cleartext[0],
       folder.items[i].cleartext[1],
       folder.items[i].cleartext[2],
-      folder.items[i].cleartext[3],
+      urls,
       folder.items[i].cleartext[4]]]);
   }
   for (let f = 0; f < folder.folders.length; f++) {

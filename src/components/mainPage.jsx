@@ -179,6 +179,29 @@ function normalizeSafes(safes) {
   }
 }
 
+
+function hostInItem(hostname, item) {
+    const urls = item.cleartext[3].split("\x01");
+
+    for(let url of urls) {
+      try {
+        url = url.toLowerCase();
+        if (url.substring(0, 4) != "http") {
+          url = "https://" + url;
+        }
+        url = new URL(url);
+        let itemHost = url.hostname.toLowerCase();
+        if (itemHost.substring(0, 4) === "www.") {
+          itemHost = itemHost.substring(4);
+        }
+        if (itemHost == hostname) {
+          return true;
+        }
+      } catch (err) {}
+    }
+    return false
+}
+
 class MainPage extends Component {
   state = {
     safes: [],
@@ -276,10 +299,7 @@ class MainPage extends Component {
   };
 
   refreshUserData = ({ safes = [], newFolderID, broadcast = true } = {}) => {
-    console.log(safes);
-    console.log(newFolderID);
     if (broadcast && wsConnector) {
-      console.log(JSON.stringify(safes));
       wsConnector.send(JSON.stringify(safes));
     }
 
@@ -318,7 +338,6 @@ class MainPage extends Component {
               activeFolder = data.safes[0];
             }
             setUserData(data);
-            console.log("setting new state with updated data");
             progress.unlock();
 
             this.userDataJustLoaded = true;
@@ -402,7 +421,7 @@ class MainPage extends Component {
                     console.log(err);
                   }
                 } else {
-                  console.log("websocket disbled");
+                  console.log("websocket disabled");
                 }
 
                 this.userDataJustLoaded = true;
@@ -460,7 +479,6 @@ class MainPage extends Component {
       this.pageDataLoaded = true;
       this.getPageData();
     }
-    console.log("componentDidUpdate");
     if(this.userDataJustLoaded) {
       this.userDataJustLoaded = false;
 
@@ -611,26 +629,14 @@ class MainPage extends Component {
             // key!= null => confirmed, better have a class
             const items = safe.rawItems;
             for (const item of items) {
-              try {
-                let itemUrl = item.cleartext[3].toLowerCase();
-                if (itemUrl.substring(0, 4) != "http") {
-                  itemUrl = "https://" + itemUrl;
-                }
-
-                itemUrl = new URL(itemUrl);
-                let itemHost = itemUrl.hostname.toLowerCase();
-                if (itemHost.substring(0, 4) === "www.") {
-                  itemHost = itemHost.substring(4);
-                }
-                if (itemHost == hostname) {
-                  result.push({
-                    safe: safe.name,
-                    title: item.cleartext[0],
-                    username: item.cleartext[1],
-                    password: item.cleartext[2],
-                  });
-                }
-              } catch (err) {}
+              if(hostInItem(hostname, item)) {
+                result.push({
+                  safe: safe.name,
+                  title: item.cleartext[0],
+                  username: item.cleartext[1],
+                  password: item.cleartext[2],
+                });
+              }
             }
           }
         }

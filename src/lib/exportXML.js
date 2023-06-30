@@ -26,6 +26,7 @@ function dump_item(item, indent) {
     password=item.cleartext[2];
     url=item.cleartext[3];
     notes=item.cleartext[4];
+    let urls = item.cleartext[3].split('\x01');
 
 
     if (notes != '') {
@@ -50,7 +51,7 @@ function dump_item(item, indent) {
     if (url != '') {
       xml += id1 + '<String>\r\n';
       xml += id2 + '<Key>URL</Key>\r\n';
-      xml += id2 + '<Value>' + utils.escapeHtml(url) + '</Value>\r\n';
+      xml += id2 + '<Value>' + utils.escapeHtml(urls[0]) + '</Value>\r\n';
       xml += id1 + '</String>\r\n';
     }
     if (username != '') {
@@ -71,6 +72,20 @@ function dump_item(item, indent) {
       xml += id2 + '<Value>' + utils.escapeHtml(item.cleartext[5]) + '</Value>\r\n';
       xml += id1 + '</String>\r\n';
     }
+
+    // KeepassXC naming
+
+    for(let i = 1; i < urls.length; i++) {
+      xml += id1 + '<String>\r\n';
+      if(i == 1) {
+        xml += id2 +`<Key>KP2A_URL</Key>\r\n`;
+      } else {
+        xml += id2 +`<Key>KP2A_URL_${i-1}</Key>\r\n`;
+      }
+      xml += id2 + '<Value>' + utils.escapeHtml(urls[i]) + '</Value>\r\n';
+      xml += id1 + '</String>\r\n';
+    }
+
     xml += indent + '</Entry>\r\n';
     return;
   }

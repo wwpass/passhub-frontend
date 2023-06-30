@@ -6,16 +6,24 @@ import { copyToClipboard, startCopiedTimer} from "../lib/copyToClipboard";
 function PasswordModalUrl(props) {
 
     function followUrl() {
-        if(!props.edit && props.item && props.item.cleartext[3].length > 0) {
-            openInExtension(props.item);
+        if(!props.edit && props.url && props.url.length > 0) {
+            openInExtension(props.item, props.url);
         }
     }
+
+    function followSecondaryUrl() {
+      if(!props.edit && props.secondaryUrl && props.secondaryUrl.length > 0) {
+          openInExtension(props.item, props.secondaryUrl);
+      }
+    }
+
+    const showSecondaryUrl = props.showSecondaryUrl && ((props.secondaryUrl != "") || props.edit)
 
     return(
       <>
         <div
-          className={props.showSecondaryUrl? "itemModalField upper" : "itemModalField"}
-          style={{ display: "flex", position: "relative", marginBottom: props.showSecondaryUrl ? 0:32 }}
+          className={showSecondaryUrl? "itemModalField upper" : "itemModalField"}
+          style={{ display: "flex", position: "relative", marginBottom: showSecondaryUrl ? 0:32 }}
         >
           <div
             style={{ flexGrow: 1, overflow: "hidden" }}
@@ -79,10 +87,11 @@ function PasswordModalUrl(props) {
             </div>
           )}
         </div>
-        { props.showSecondaryUrl && (
+        { showSecondaryUrl &&  (
           <div
             className="itemModalField lower"
             style={{ display: "flex", position: "relative", marginBottom: 32 }}
+            onClick={followSecondaryUrl}
             >
             <div>
               <ItemModalFieldNav
@@ -94,7 +103,8 @@ function PasswordModalUrl(props) {
                 <input
                   id="secondary-url"
                   spellCheck={false}
-                  value={props.url}
+                  value={props.secondaryUrl}
+                  onChange={props.onSecondaryUrlChange}
                 ></input>
               </div>
               ) : (
@@ -102,7 +112,7 @@ function PasswordModalUrl(props) {
                 className="url-span"
                 style={{ overflow: "hidden", textOverflow: "ellipsis" }}
               >
-                {props.url}
+                {props.secondaryUrl}
               </div>
               )}
             </div>

@@ -13,7 +13,6 @@ import {
   limits,
   atRecordsLimits,
 } from "../lib/utils";
-import { openInExtension } from "../lib/extensionInterface";
 import getTOTP from "../lib/totp";
 import { copyToClipboard } from "../lib/copyToClipboard";
 
@@ -43,8 +42,6 @@ function drawTotpCircle() {
   }
 }
 
-// const copiedTimer = null;
-
 function startCopiedTimer() {
   setTimeout(() => {
     document
@@ -71,6 +68,7 @@ class PasswordModal extends Component {
     username: "",
     password: "",
     url: "",
+    secondaryUrl: "",
     forceTotp: false,
     totpSecret: "",
     showModal: "",
@@ -160,7 +158,21 @@ class PasswordModal extends Component {
       url: newValue,
       urlWarning,
     });
-    // this.setState({ url: e.target.value });
+  };
+
+  onSecondaryUrlChange = (e) => {
+    let urlWarning = "";
+    const maxLength = limits.MAX_URL_LENGTH;
+    let newValue = e.target.value;
+
+    if (newValue.length > maxLength) {
+      newValue = newValue.substring(0, maxLength);
+      urlWarning = `URL length is ${maxLength} chars, truncated`;
+    }
+    this.setState({
+      secondaryUrl: newValue,
+      urlWarning,
+    });
   };
 
   onClose = () => {
@@ -168,11 +180,19 @@ class PasswordModal extends Component {
   };
 
   onSubmit = (title, note) => {
+
+    let url = this.state.url;
+    let secondaryUrl = this.state.secondaryUrl.trim();
+
+    if(secondaryUrl.length) {
+      url = [url, secondaryUrl].join('\x01');
+    }
+
     const pData = [
       title,
       this.state.username,
       this.state.password,
-      this.state.url,
+      url,
       note,
     ];
     const totpSecret = this.state.totpSecret
@@ -310,6 +330,14 @@ class PasswordModal extends Component {
       }
     }
 
+    let urls = this.props.args.item.cleartext[3].trim().split('\x01');
+    let url = urls[0];
+    let secondaryUrl = ""; 
+    if(urls.length > 1) {
+      secondaryUrl = urls[1]
+    }
+  
+
     if (!this.isShown) {
       this.isShown = true;
       this.state.errorMsg = "";
@@ -321,7 +349,8 @@ class PasswordModal extends Component {
       if (this.props.args.item) {
         this.state.username = this.props.args.item.cleartext[1];
         this.state.password = this.props.args.item.cleartext[2];
-        this.state.url = this.props.args.item.cleartext[3];
+        this.state.url = url;
+        this.state.secondaryUrl = secondaryUrl;
         this.state.edit = false;
         this.state.totpSecret =
           this.props.args.item.cleartext.length > 5
@@ -331,6 +360,7 @@ class PasswordModal extends Component {
         this.state.username = "";
         this.state.password = "";
         this.state.url = "";
+        this.state.secondaryUrl = "";
         this.state.totpSecret = "";
         this.state.edit = true;
       }
@@ -619,8 +649,10 @@ class PasswordModal extends Component {
             item={this.props.args.item} 
             edit={this.state.edit} 
             url={this.state.url} 
+            secondaryUrl = {this.state.secondaryUrl}
             onUrlChange = {this.onUrlChange}
-            showSecondaryUrl = {false}
+            onSecondaryUrlChange = {this.onSecondaryUrlChange}
+            showSecondaryUrl = {true}
           ></PasswordModalUrl>
 
         {this.state.urlWarning && this.state.urlWarning.length > 0 && (

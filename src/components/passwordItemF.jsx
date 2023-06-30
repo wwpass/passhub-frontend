@@ -22,7 +22,8 @@ function PasswordItem(props) {
 
   const item = props.item;
 
-  let link_text = item.cleartext[3];
+  const url = item.cleartext[3].split("\x01")[0];
+  let link_text = url;
   if (link_text.startsWith("https://")) {
     link_text = link_text.substring(8);
   } else if (link_text.startsWith("http://")) {
@@ -77,7 +78,7 @@ function PasswordItem(props) {
       <td
         className="d-none d-md-table-cell                    col-md-6 col-lg-4 col-xl-3 login-item-link "
         onClick={() => {
-          openInExtension(props.item);
+          openInExtension(props.item, url);
         }}
         style={{
           cursor: link_text.length ? "pointer" : "",
