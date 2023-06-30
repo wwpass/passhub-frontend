@@ -214,7 +214,8 @@ class CreateFileModal extends React.Component {
                 overflowWrap: "anywhere",
               }}
             >
-              {fileNameArray.map((f) => (<div className="filename" style={{marginBottom:"6px", maxWidth:"330px", overflow: "hidden", whiteSpace:"nowrap", textOverflow:"ellipsis", }}>{f}</div>))}
+              {(fileNameArray.length == 0) &&  (<div className="filename" style={{marginBottom:"6px", maxWidth:"330px", overflow: "hidden", whiteSpace:"nowrap", textOverflow:"ellipsis", }}>Choose file(s)</div>)}
+              {fileNameArray.map((f) => (<div className="filename">{f}</div>))}
             </div>
             <Button variant="primary" type="submit" onClick={this.onSubmit} style={{height: "48px", marginTop: ((fileNameArray.length > 1)? "12px": "0") }}>
               Browse

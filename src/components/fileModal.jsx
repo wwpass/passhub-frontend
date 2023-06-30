@@ -463,6 +463,7 @@ class FileModal extends Component {
                 type="file"
                 id="inputFileModal"
                 onChange={this.onFileInputChange}
+                multiple={true}
               ></input>
             </div>
           ) : (

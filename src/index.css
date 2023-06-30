@@ -1126,6 +1126,14 @@ input[type="file"] {
   border: 1px solid #a3a4ab;
 }
 
+.import-modal-file-field .filename {
+  margin-bottom:6px;
+  max-width:330px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .addModalItem {
   height: 48px;
   cursor: pointer;
