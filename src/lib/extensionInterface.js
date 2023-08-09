@@ -2,9 +2,24 @@
 let extensionId = 'bamjbfhfacpdkenilcibkmpdahkgfejh';  // -- real ID
 
 if (window.location.href.includes("extension")) {
- extensionId = 'jeanejlnahceelplajcbfgdphkbnpagp'; // -- local 
-} 
+ extensionId = 'bjgdgacmgpdpdokjglkpffbmhiimijhf'; 
+}
 
+if (window.location.href.includes("edge")) {
+    extensionId = 'ekjhmdlgbfkdaahijgcodpccaaflcadj'; 
+}
+
+if (window.location.href.includes("opera")) {
+    extensionId = 'pobmpfiohdlbjcfjfnajhkpoaikabedf'; 
+}
+
+console.log('extensionId', extensionId);
+
+function logtime () {
+    const today = new Date();
+    return today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ";
+}
+  
 
 /*global chrome*/
 
@@ -32,6 +47,30 @@ function sendAdvise(s) {
 
 let extensionPort = null;
 
+let keepAliveTimer = null;
+
+function keepAlive() {
+    if(extensionPort && keepAliveTimer) {
+        try {
+            extensionPort.postMessage({id:"keepAlive"});
+            console.log(logtime() + ' keepAlive Sent');
+            return;
+        }
+        catch(err) {
+            console.log(logtime() + ' catch 51');
+
+            if(keepAliveTimer) {
+                clearInterval(keepAliveTimer);
+                keepAliveTimer = null;
+            }
+        }
+    }
+    if(keepAliveTimer) {
+        clearInterval(keepAliveTimer);
+        keepAliveTimer = null;
+    }
+}
+
 function connect(findCb) {
     if ( typeof chrome == 'undefined') {
         return; 
@@ -44,23 +83,35 @@ function connect(findCb) {
         }
 
         extensionPort = chrome.runtime.connect(extensionId);
+        console.log(logtime() + ' connected');
+
+
+        keepAliveTimer = setInterval(keepAlive, 25000);
 
         //manifest V3: 
 
-        setTimeout(connect, 4*60*1000, findCb);
+//         setTimeout(connect, 4*60*1000, findCb);
 
         extensionPort.onDisconnect.addListener((p) => {
             // FF way:
             /*if (p.error) {
                 console.log(`Disconnected due to an error: ${p.error.message}`);
             }*/
+            extensionPort = null;
+
+            console.log(logtime() + ' disConnected');
             // Chrome 
-            if(chrome.runtime.lastError) {
+            if(chrome.runtime.lastError) {  // does not exist
                 console.log('Connection rintime.error');
                 console.log(chrome.runtime.lastError);
+            } else {
+              setTimeout(connect, 100, findCb);
             }
-            extensionPort = null;
-            console.log('disConnected');
+
+//            extensionPort = chrome.runtime.connect(extensionId);
+//            console.log(logtime() + ' connected');
+    
+
         });
         extensionPort.onMessage.addListener(function(message,sender){
             /////  -->  TODO restartIdleTimers();
@@ -126,14 +177,14 @@ function sendCredentials(s) {
 };
 
 
-function openInExtension(item) {
+function openInExtension(item, url) {
     const s = {
         id: 'loginRequest',
         username: item.cleartext[1],
         password: item.cleartext[2],
-        url: item.cleartext[3],
+        url: url,
     }
-    if(item.cleartext[3].length > 0) {
+    if(url.length > 0) {
         sendCredentials(s);
     }
 }

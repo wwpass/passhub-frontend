@@ -93,7 +93,7 @@ function PasswordModalUrl(props) {
             style={{ display: "flex", position: "relative", marginBottom: 32 }}
             onClick={followSecondaryUrl}
             >
-            <div>
+            <div style={{ flexGrow: 1, overflow: "hidden" }}>
               <ItemModalFieldNav
                 name="Secondary URL"
                 htmlFor="secondary-url"

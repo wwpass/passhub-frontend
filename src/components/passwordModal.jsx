@@ -14,7 +14,10 @@ import {
   atRecordsLimits,
 } from "../lib/utils";
 import getTOTP from "../lib/totp";
+
 import { copyToClipboard } from "../lib/copyToClipboard";
+
+// import { copyToClipboard, startCopiedTimer} from "../lib/copyToClipboard";
 
 import ItemModalFieldNav from "./itemModalFieldNav";
 
@@ -329,14 +332,7 @@ class PasswordModal extends Component {
 */        
       }
     }
-
-    let urls = this.props.args.item.cleartext[3].trim().split('\x01');
-    let url = urls[0];
-    let secondaryUrl = ""; 
-    if(urls.length > 1) {
-      secondaryUrl = urls[1]
-    }
-  
+ 
 
     if (!this.isShown) {
       this.isShown = true;
@@ -349,8 +345,11 @@ class PasswordModal extends Component {
       if (this.props.args.item) {
         this.state.username = this.props.args.item.cleartext[1];
         this.state.password = this.props.args.item.cleartext[2];
-        this.state.url = url;
-        this.state.secondaryUrl = secondaryUrl;
+
+        let urls = this.props.args.item.cleartext[3].trim().split('\x01');
+        this.state.url = urls[0];
+        this.state.secondaryUrl = (urls.length > 1) ? urls[1] : "";
+
         this.state.edit = false;
         this.state.totpSecret =
           this.props.args.item.cleartext.length > 5
