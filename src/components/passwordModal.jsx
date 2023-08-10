@@ -100,9 +100,10 @@ class PasswordModal extends Component {
   };
 
   onEdit = () => {
+    if( ('user_role' in this.props.args.safe) && (this.props.args.safe.user_role == 'limited view')) {
+      return;      
+    }
     this.setState({ edit: true, forceTotp: false });
-    // this.props.onClose();
-    // this.props.args.showItemPane(this.props.args);
   };
 
   onUsernameChange = (e) => {
@@ -332,7 +333,12 @@ class PasswordModal extends Component {
 */        
       }
     }
- 
+
+    let limitedView = false;
+    if(('user_role' in this.props.args.safe) && (this.props.args.safe.user_role == "limited view")) {
+      limitedView = true;
+    }
+    
 
     if (!this.isShown) {
       this.isShown = true;
@@ -344,7 +350,7 @@ class PasswordModal extends Component {
       this.state.showPassword = false;
       if (this.props.args.item) {
         this.state.username = this.props.args.item.cleartext[1];
-        this.state.password = this.props.args.item.cleartext[2];
+        this.state.password = limitedView ? "* hidden *" : this.props.args.item.cleartext[2];
 
         let urls = this.props.args.item.cleartext[3].trim().split('\x01');
         this.state.url = urls[0];
@@ -494,6 +500,7 @@ class PasswordModal extends Component {
         onEdit={this.onEdit}
         onSubmit={this.onSubmit}
         errorMsg={this.state.errorMsg}
+        limitedView={limitedView}
       >
         <div
           className="itemModalField upper"

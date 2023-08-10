@@ -88,6 +88,10 @@ class ItemModal extends Component {
   };
 
   onEdit = () => {
+    if(('limitedView' in this.props) && this.props.limitedView) {
+      return;
+    }
+
     this.setState({ edit: true });
     if (this.props.onEdit) {
       this.props.onEdit();
@@ -187,6 +191,11 @@ class ItemModal extends Component {
 
     const maxHeight = this.props.isNote ? "" : "150px";
 
+    let limitedView = false;
+    if(('limitedView' in this.props) && this.props.limitedView) {
+      limitedView = true;
+    }
+
     return (
       <Modal
         show={this.props.show}
@@ -232,11 +241,13 @@ class ItemModal extends Component {
           <div className="itemModalPath d-none d-sm-block set-active-folder">
             {pathString}
           </div>
-          {!this.state.edit ? (
+          { (!this.state.edit && !limitedView) ? (
             <div className="itemModalTools">
               {/*
                 <ItemViewIcon iconId="#f-history" opacity="1" title="History" />
                 */}
+
+              {!this.props.limitedView  } 
               <ItemViewIcon
                 iconId="#f-move"
                 title="Move"
@@ -271,11 +282,14 @@ class ItemModal extends Component {
               </div>
             </div>
           ) : (
-            <div className="itemModalTools edit">
-              <div className="itemModalEditButton" onClick={this.onSubmit}>
-                <span style={{ verticalAlign: "top" }}>Save</span>
-              </div>
-            </div>
+            <>
+            {!limitedView && (
+              <div className="itemModalTools edit">
+                <div className="itemModalEditButton" onClick={this.onSubmit}>
+                  <span style={{ verticalAlign: "top" }}>Save</span>
+                </div>
+              </div> )}
+            </>              
           )}
         </div>
 

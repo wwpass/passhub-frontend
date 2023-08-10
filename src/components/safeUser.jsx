@@ -15,6 +15,9 @@ class SafeUSer extends Component {
 
   handleRoleMenuClick = (cmd, user) => {
     let role = "readonly";
+    if (cmd == "Limited view") {
+      role = "limited view";
+    }
     if (cmd == "Can edit") {
       role = "editor";
     }
@@ -30,6 +33,25 @@ class SafeUSer extends Component {
 
   safeUserMenu = (
     <Menu id={"safe-user-menu"}>
+      <Item
+        onClick={(e) => {
+          this.handleRoleMenuClick("Limited view", e.props.user);
+        }}
+      >
+        <div>
+          <div>Limited view</div>
+          <div
+            style={{
+              fontSize: "13px",
+              opacity: "0.5",
+              maxWidth: "17em",
+              whiteSpace: "break-spaces",
+            }}
+          >
+            User can only view records and download files, passwords are hidden
+          </div>
+        </div>
+      </Item>
       <Item
         onClick={(e) => {
           this.handleRoleMenuClick("Can view", e.props.user);
@@ -106,6 +128,10 @@ class SafeUSer extends Component {
 
   render() {
     let role = "can view";
+
+    if (this.props.user.role == "limited view") {
+      role = "limited view";
+    }
     if (this.props.user.role == "editor") {
       role = "can edit";
     }

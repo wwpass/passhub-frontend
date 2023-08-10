@@ -54,6 +54,16 @@ class SafePane extends Component {
     }
 
     if (cmd === "export") {
+      if(node.user_role == "limited view") {
+        console.log('limited view safe not exported');
+        return;
+      }
+
+      if(node.safe && (node.safe.user_role == "limited view")) {
+        console.log('limited view safe not exported');
+        return;
+      }
+
       this.setState({
         showModal: "ExportFolderModal",
         exportFolderModalArgs: node,

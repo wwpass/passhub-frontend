@@ -37,6 +37,26 @@ class ShareModal extends Component {
     <Menu id={"invited-user-menu"}>
       <Item
         onClick={(e) => {
+          this.setState({ invitedUserRights: "limited view" });
+        }}
+      >
+        <div>
+          <div>Limited view</div>
+          <div
+            style={{
+              fontSize: "13px",
+              opacity: "0.5",
+              maxWidth: "17em",
+              whiteSpace: "break-spaces",
+            }}
+          >
+            User can only view records and download files, passwords are hidden
+          </div>
+        </div>
+      </Item>
+
+      <Item
+        onClick={(e) => {
           this.setState({ invitedUserRights: "can view" });
         }}
       >
@@ -54,6 +74,7 @@ class ShareModal extends Component {
           </div>
         </div>
       </Item>
+
       <Item
         onClick={(e) => {
           this.setState({ invitedUserRights: "can edit" });
@@ -97,6 +118,9 @@ class ShareModal extends Component {
 
   shareByMailFinal = (username, eAesKey) => {
     let role = "readonly";
+    if (this.state.invitedUserRights == "limited view") {
+      role = "limited view";
+    }
     if (this.state.invitedUserRights == "can edit") {
       role = "editor";
     }

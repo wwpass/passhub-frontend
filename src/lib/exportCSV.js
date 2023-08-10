@@ -29,10 +29,18 @@ function exportCSV(folder) {
 
   if (Array.isArray(folder)) {
     for (let s = 0; s < folder.length; s++) {
-      exportFolder(folder[s]);
+      if(folder[s].user_role != "limited view") {
+        exportFolder(folder[s]);
+      } else {
+        console.log('limited view safe not exported');
+      }
     }
   } else {
-    exportFolder(folder);
+    if(folder.user_role != "limited view") {
+      exportFolder(folder);
+    } else {
+      console.log('limited view safe not exported');
+    }
   }
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   return blob;
