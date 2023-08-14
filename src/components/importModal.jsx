@@ -7,6 +7,7 @@ import Button from "react-bootstrap/Button";
 import ModalCross from "./modalCross";
 
 import importXML from "../lib/importXML";
+import importJSON from "../lib/importJSON";
 import importCSV from "../lib/importCSV";
 import importMerge from "../lib/importMerge";
 import { createSafeFromFolder } from "../lib/crypto";
@@ -79,9 +80,9 @@ class ImportModal extends Component {
       return;
     }
     const extension = theFile.name.split(".").pop().toLowerCase();
-    if (extension !== "csv" && extension !== "xml") {
+    if ( !['csv', 'xml', 'json'].includes(extension)) {
       this.setState({
-        errorMsg: "Unsupported file type, only XML and CSV are allowed",
+        errorMsg: "Unsupported file type, only XML, JSON and CSV are allowed",
       });
       return;
     }
@@ -103,7 +104,10 @@ class ImportModal extends Component {
       try {
         if (extension === "xml") {
           imported = importXML(text);
-        } else {
+        } else if (extension === "json") {
+          imported = importJSON(text);
+          imported.name = theFile.name;
+        } else{
           imported.name = theFile.name;
           imported.items = [];
           const importResult = importCSV(text);
@@ -192,7 +196,7 @@ class ImportModal extends Component {
 
             <input
               type="file"
-              accept=".xml,.csv"
+              accept=".xml,.csv,.json"
               id="inputFileModal"
               onChange={this.onFileInputChange}
             ></input>
