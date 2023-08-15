@@ -1,3 +1,4 @@
+
 function insertFolder(root, node) {
   for(const folder of root.folders) {
     if(folder.name == node.path[0]) {
@@ -30,7 +31,6 @@ function normalizeFolders(ifolders) {
 }
 
 function importJSON(text) {
-
   const ibj = JSON.parse(text);
   const obj  = {items: [], folders: [] }
   const folderMap =  {}
@@ -44,28 +44,35 @@ function importJSON(text) {
     for(const item of ibj.items) {
       const otem = {}
 
-      if(item.type == 1) {
+      if(item.type == 1) {  // password
         let url = "";
         if(Array.isArray(item.login.uris) && item.login.uris.length) {
-          url = item.login.uris[0].uri;
+          let urls = [];
+          for(let u of item.login.uris) {
+            urls.push(u.uri);
+          }
+          url = urls.join('\x01');  
         }
         otem.cleartext = [item.name, item.login.username, item.login.password, url, item.notes];
         if(item.login.totp) {
           otem.cleartext.push(item.login.totp.trim());
         }
         otem.options = {};
-      }
-
-      if(item.type == 2) {
+      } else if(item.type == 2) {  // note
         otem.cleartext = [item.name, "", "", "", item.notes];
         otem.options = {note:1};
-      }
-
-      if(item.type == 3) {  // card
+      } else if(item.type == 3) {  // card
         otem.cleartext = ["card", item.name, item.notes, item.card.number, item.card.cardholderName, item.card.expMonth, item.card.expYear, item.card.code];
-        otem.options = {version:5};
+        //otem.options = {version:5};
+        otem.version=5;
+      } else if(item.type == 4) {  // identity
+        otem.cleartext = [item.name,  "", "", "", `${item.notes} ${JSON.stringify(item.identity, null, 2)}`];
+        otem.options = {note:1};
+      } else {
+        console.log('unknown ityem type ', item.type);
+        continue;
       }
-
+      
       if(item.folderId) {
         folderMap[item.folderId].items.push(otem);
       } else  {
@@ -79,6 +86,7 @@ function importJSON(text) {
   } catch(error) {
     console.log('caught', error)
   }
+
 }
 
 export default importJSON;
