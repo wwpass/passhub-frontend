@@ -1,14 +1,25 @@
-// import {restartIdleTimers} from './timers'
 
-let extensionId = 'bamjbfhfacpdkenilcibkmpdahkgfejh';
-if (window.location.hostname === 'localhost') {
-   extensionId = 'dnplcljbgfioahaahlndfpkljfdhkcca'; 
-   // extensionId = 'iiohcppkjekblgemjlbodlddgpbkdmdl'; 
+let extensionId = 'bamjbfhfacpdkenilcibkmpdahkgfejh';  // -- real ID
+
+if (window.location.href.includes("extension")) {
+ extensionId = 'bjgdgacmgpdpdokjglkpffbmhiimijhf'; 
 }
 
-if (navigator.userAgent.includes('Firefox')) {
-    extensionId = 'b0549b956aa92bcf1ac541af73735f7b1b3bfff0@temporary-addon';
-} 
+if (window.location.href.includes("edge")) {
+    extensionId = 'ekjhmdlgbfkdaahijgcodpccaaflcadj'; 
+}
+
+if (window.location.href.includes("opera")) {
+    extensionId = 'pobmpfiohdlbjcfjfnajhkpoaikabedf'; 
+}
+
+console.log('extensionId', extensionId);
+
+function logtime () {
+    const today = new Date();
+    return today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds() + " ";
+}
+  
 
 /*global chrome*/
 
@@ -34,7 +45,31 @@ function sendAdvise(s) {
     }
 };
 
-let extensionPort;
+let extensionPort = null;
+
+let keepAliveTimer = null;
+
+function keepAlive() {
+    if(extensionPort && keepAliveTimer) {
+        try {
+            extensionPort.postMessage({id:"keepAlive"});
+            console.log(logtime() + ' keepAlive Sent');
+            return;
+        }
+        catch(err) {
+            console.log(logtime() + ' catch 51');
+
+            if(keepAliveTimer) {
+                clearInterval(keepAliveTimer);
+                keepAliveTimer = null;
+            }
+        }
+    }
+    if(keepAliveTimer) {
+        clearInterval(keepAliveTimer);
+        keepAliveTimer = null;
+    }
+}
 
 function connect(findCb) {
     if ( typeof chrome == 'undefined') {
@@ -42,46 +77,69 @@ function connect(findCb) {
     }
 
     try {
+        if(extensionPort) {
+            extensionPort.disconnect();
+            extensionPort = null
+        }
+
         extensionPort = chrome.runtime.connect(extensionId);
+        console.log(logtime() + ' connected');
+
+
+        keepAliveTimer = setInterval(keepAlive, 25000);
+
+        //manifest V3: 
+
+//         setTimeout(connect, 4*60*1000, findCb);
+
         extensionPort.onDisconnect.addListener((p) => {
             // FF way:
             /*if (p.error) {
                 console.log(`Disconnected due to an error: ${p.error.message}`);
             }*/
+            extensionPort = null;
+
+            console.log(logtime() + ' disConnected');
             // Chrome 
-            if(chrome.runtime.lastError) {
+            if(chrome.runtime.lastError) {  // does not exist
                 console.log('Connection rintime.error');
                 console.log(chrome.runtime.lastError);
+            } else {
+              setTimeout(connect, 100, findCb);
             }
-            extensionPort = null;
-            console.log('disConnected');
+
+//            extensionPort = chrome.runtime.connect(extensionId);
+//            console.log(logtime() + ' connected');
+    
+
         });
         extensionPort.onMessage.addListener(function(message,sender){
             /////  -->  TODO restartIdleTimers();
             console.log('received');
             console.log(message);
-            if(message.id === 'find') {
-                try {
-                    const loc = new URL(message.url);
-                    const hostname = loc.hostname;
-                    let advise = {
-                        id: 'advise', 
-                        hostname,
-                        found: findCb(message.url)
-                    };
-                    // console.log(advise);
-                    // extensionPort.postMessage(advise);
-                    sendAdvise(advise);
-                } catch(err) {
-                    console.log('url error');
-                    console.log(message.url);
-                }
+            if(message.id === 'find') { // legacy
+                message.id = 'advise request';
             }
+            if(message.id === 'not a payment page') { // legacy
+                message.id = 'advise request';
+            }
+
+            if((message.id === 'advise request') || (message.id === 'payment page')) {
+                try {
+                    sendAdvise(findCb(message));
+                } catch(err) {
+                    console.log('catch 68');
+                    console.log(err);
+                    console.log(message);
+                }
+            } 
         });
     } catch(err) {
         console.log(err)
     }
 };
+
+
 
 function sendCredentials(s) {
     // console.log('sendCredentials');
@@ -89,7 +147,7 @@ function sendCredentials(s) {
 
     let url = s.url;
     if (url.search('://') == -1) {
-        url = `http://${url}`;
+        url = `https://${url}`;
     }
     s.url = url;
 
@@ -119,14 +177,14 @@ function sendCredentials(s) {
 };
 
 
-function openInExtension(item) {
+function openInExtension(item, url) {
     const s = {
         id: 'loginRequest',
         username: item.cleartext[1],
         password: item.cleartext[2],
-        url: item.cleartext[3],
+        url: url,
     }
-    if(item.cleartext[3].length > 0) {
+    if(url.length > 0) {
         sendCredentials(s);
     }
 }

@@ -7,10 +7,14 @@ import Button from "react-bootstrap/Button";
 import ModalCross from "./modalCross";
 
 import importXML from "../lib/importXML";
+import importJSON from "../lib/importJSON";
 import importCSV from "../lib/importCSV";
 import importMerge from "../lib/importMerge";
 import { createSafeFromFolder } from "../lib/crypto";
 import progress from "../lib/progress";
+
+let bindedSetState;
+
 
 class ImportModal extends Component {
   state = {
@@ -18,6 +22,7 @@ class ImportModal extends Component {
     errorMsg: "",
     theFile: null,
   };
+
   isShown = false;
 
   handleModeChange = (e) => {
@@ -64,14 +69,20 @@ class ImportModal extends Component {
 
   onSubmit = () => {
     const theFile = this.state.theFile;
+
+
+    // not used  
+    bindedSetState = this.setState.bind(this);
+
+
     if (!theFile) {
-      this.setState({ errorMsg: "Please select backup file" });
+      this.setState({ errorMsg: "Please select a backup file" });
       return;
     }
     const extension = theFile.name.split(".").pop().toLowerCase();
-    if (extension !== "csv" && extension !== "xml") {
+    if ( !['csv', 'xml', 'json'].includes(extension)) {
       this.setState({
-        errorMsg: "Unsupported file type, only XML and CSV are allowed",
+        errorMsg: "Unsupported file type, only XML, JSON and CSV are allowed",
       });
       return;
     }
@@ -93,21 +104,39 @@ class ImportModal extends Component {
       try {
         if (extension === "xml") {
           imported = importXML(text);
-        } else {
+        } else if (extension === "json") {
+          imported = importJSON(text);
           imported.name = theFile.name;
-          imported.entries = [];
-          imported.folders = importCSV(text);
+        } else{
+          imported.name = theFile.name;
+          imported.items = [];
+          const importResult = importCSV(text);
+          if(typeof(importResult) == 'string') {
+            progress.unlock();
+            console.log('Import result ' + importResult);
+            this.setState({ errorMsg: importResult });
+
+            // bindedSetState({ errorMsg: importResult });
+            return;
+          }
+          imported.folders = importResult;
         }
       } catch (err) {
         progress.unlock();
-        this.setState({ errorMsg: err });
+        bindedSetState({ errorMsg: err });
         return;
       }
 
       console.log(imported);
 
       if (this.state.mode !== "restore") {
-        const importedSafe = createSafeFromFolder(imported);
+        let importedSafe;
+        if( (imported.folders.length == 1) && (imported.folders[0].name == 'lastpass')) {
+          imported.folders[0].name = imported.name;
+          importedSafe = createSafeFromFolder(imported.folders[0]);
+        } else {
+          importedSafe = createSafeFromFolder(imported);
+        }
         console.log(importedSafe);
         this.uploadImportedData([importedSafe]);
       } else {
@@ -167,7 +196,7 @@ class ImportModal extends Component {
 
             <input
               type="file"
-              accept=".xml,.csv"
+              accept=".xml,.csv,.json"
               id="inputFileModal"
               onChange={this.onFileInputChange}
             ></input>
@@ -183,7 +212,7 @@ class ImportModal extends Component {
           >
             <b>Supports:</b> KeePass&nbsp;2.x&nbsp;XML, KeePassX&nbsp;CSV,
             Chrome&nbsp;passwords&nbsp;CSV, Firefox&nbsp;passwords&nbsp;CSV,
-            Lastpass&nbsp;CSV
+            Lastpass&nbsp;CSV, DashLane&nbsp;CSV
           </div>
           <div style={{ marginBottom: 0 }}>
             {[

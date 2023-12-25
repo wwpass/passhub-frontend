@@ -60,7 +60,9 @@ class DeleteItemModal extends Component {
       this.state.errorMsg = "";
     }
 
-    path = this.props.folder ? this.props.folder.path.join(" > ") : [];
+    path = this.props.folder
+      ? this.props.folder.path.map((e) => e[0]).join(" > ")
+      : [];
     title = this.props.args.item.cleartext[0];
 
     if (this.props.args.item.file) {

@@ -45,10 +45,6 @@ class LoginPage extends Component {
     if (!this.props.show) {
       return null;
     }
-    /*
-    setApiUrl("https://ext.trial.passhub.net/");
-    setWsUrl("wss://ext.trial.passhub.net/wsapp");
-*/
     return (
       <div id="login-background">
         <div id="login-root">

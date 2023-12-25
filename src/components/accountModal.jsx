@@ -4,6 +4,7 @@ import Button from "react-bootstrap/Button";
 import ModalCross from "./modalCross";
 
 import InputField from "./inputField";
+import { getVerifier } from "../lib/utils";
 
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -31,11 +32,18 @@ class AccountModal extends Component {
     console.log("Slider ", value);
     // restartIdleTimers(value);
     this.props.getAccountData({
-      verifier: document.getElementById("csrf").getAttribute("data-csrf"),
+      verifier:  getVerifier(),
       operation: "setInactivityTimeout",
       value: value * 60,
     });
   };
+
+  cancelSubscription = () => {
+    this.props.getAccountData({
+        verifier: getVerifier(),
+        operation: "cancelSubscription",
+    });
+  }
 
   render() {
     if (this.props.show) {
@@ -47,10 +55,13 @@ class AccountModal extends Component {
       this.isShown = false;
       return null;
     }
+
+    const accountData = this.props.accountData;
+
     const marks = { 15: "15 min", 60: "1 hour", 240: "4 hours" };
 
     let slider_position = 240;
-    const { desktop_inactivity } = this.props.accountData;
+    const { desktop_inactivity } = accountData;
     if (desktop_inactivity) {
       if (desktop_inactivity < 50 * 60) {
         slider_position = 15;
@@ -60,8 +71,63 @@ class AccountModal extends Component {
     }
 
     const showUpgrade =
-      this.props.accountData.plan &&
-      this.props.accountData.plan.toUpperCase() == "FREE";
+      accountData.plan &&
+      (accountData.plan.toUpperCase() == "FREE");
+
+    let accountType = "";
+
+    if(!accountData.business) {
+      if(showUpgrade) {
+        accountType = "FREE";
+      } else {
+        accountType = "PREMIUM"
+      } 
+    }
+     
+    let premiumDiv = null;
+
+    if(typeof accountData.expires == "number") {
+      let premiumComment = '';
+      if(accountData.autorenew) {
+            premiumComment = 'Subscription next auto-renewal date';
+        } else {
+            premiumComment = 'expires at';
+        }
+        
+
+        premiumDiv = (
+          <div style={{padding: "1em", marginBottom: "1em", borderRadius: "12px", border: "1px solid gray"}}>
+            <div>{premiumComment}<br></br>{`${new Date(accountData.expires * 1000)}`}</div>
+
+            {(accountData.autorenew || accountData.receipt_url) &&  (
+              <div style={{marginTop: "1em", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "2em;", marginTop: "2em"}}>
+                <div>
+                  <div>
+                    { accountData.receipt_url && (
+                      <a href={accountData.receipt_url} style={{color: "#007b40"}} target='_blank'>Your latest payment receipt</a>
+                    )}
+                  </div>
+                  <div>
+                    { accountData.autorenew && (
+                      <a href="#"  onClick={() => {
+                        window.open("payments/update_card.php", "passhub_payment");
+                        this.props.onClose();
+                      }}
+                      style={{color: "#007b40"}} > card data</a>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  { accountData.autorenew && (
+                    <button className="btn btn-danger" onClick={this.cancelSubscription}>Cancel auto-renew</button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+    }
 
     return (
       <Modal
@@ -77,14 +143,15 @@ class AccountModal extends Component {
         </div>
 
         <Modal.Body style={{ marginBottom: "24px" }}>
-          <div style={{ marginBottom: 32 }}>
-            Accout type:{" "}
-            <b>
-              {showUpgrade
-                ? this.props.accountData.plan.toUpperCase()
-                : "PREMIUM"}
-            </b>
-          </div>
+
+          { !accountData.business && (
+            <div style={{ marginBottom: 32 }}>
+              Accout type:{" "}
+              <b>{accountType}</b>
+            </div>
+          )}
+          { !accountData.business && (accountData.plan.toUpperCase() == "PREMIUM") && premiumDiv } 
+
           <div style={{ margin: "0 0 12px 0" }}>Inactvity timeout</div>
           <div style={{ marginBottom: "64px", padding: "0 32px" }}>
             <Slider
@@ -98,14 +165,14 @@ class AccountModal extends Component {
               handleStyle={{ borderColor: "#00BC62" }}
             ></Slider>
           </div>
-          {this.props.accountData.email.length ? (
+          {accountData.email.length ? (
             <InputField
               label="Email"
               readonly
-              value={this.props.accountData.email}
+              value={accountData.email}
               onClick={this.onMailClick}
             >
-              {!this.props.accountData.business && (
+              {!accountData.business && (
                 <div>
                   <span className="iconTitle">Edit</span>
                   <svg
@@ -175,7 +242,7 @@ class AccountModal extends Component {
           {false && (
             <div style={{ marginBottom: "32px" }}>
               <p>
-                Your <b>{this.props.accountData.plan.toUpperCase()}</b> account
+                Your <b>{accountData.plan.toUpperCase()}</b> account
                 is limited to 200 records and 100 MB storage.
               </p>
               <p>
@@ -203,17 +270,3 @@ class AccountModal extends Component {
 }
 
 export default AccountModal;
-
-/*
-            <div
-              style={{
-                background: "#00BC62",
-                opacity: ".1",
-                borderRadius: "16px",
-              }}
-            >
-              <div>
-                an email is needed so that other users can share safes with you,
-                as well as to subscribe to news and updates
-              </div>
-</div> */

@@ -9,19 +9,28 @@ import {
   isStrongPassword,
   getApiUrl,
   getVerifier,
+  getUserData,
   limits,
   atRecordsLimits,
 } from "../lib/utils";
-import { openInExtension } from "../lib/extensionInterface";
 import getTOTP from "../lib/totp";
+
 import { copyToClipboard } from "../lib/copyToClipboard";
+
+// import { copyToClipboard, startCopiedTimer} from "../lib/copyToClipboard";
 
 import ItemModalFieldNav from "./itemModalFieldNav";
 
 import ItemModal from "./itemModal";
-import PlanLimitsReachedModal from "./planLimitsReachedModal";
+
+// import PlanLimitsReachedModal from "./planLimitsReachedModal";
+import UpgradeModal from "./upgradeModal";
+
+
 import Eye from "./eye";
 import GeneratePasswordModal from "./generatePasswordModal";
+
+import PasswordModalUrl from "./passwordModalUrl";
 
 function drawTotpCircle() {
   const sec = new Date().getTime() / 1000;
@@ -35,8 +44,6 @@ function drawTotpCircle() {
     totpTimerListeners.forEach((f) => f());
   }
 }
-
-// const copiedTimer = null;
 
 function startCopiedTimer() {
   setTimeout(() => {
@@ -64,6 +71,7 @@ class PasswordModal extends Component {
     username: "",
     password: "",
     url: "",
+    secondaryUrl: "",
     forceTotp: false,
     totpSecret: "",
     showModal: "",
@@ -92,9 +100,10 @@ class PasswordModal extends Component {
   };
 
   onEdit = () => {
+    if( ('user_role' in this.props.args.safe) && (this.props.args.safe.user_role == 'limited view')) {
+      return;      
+    }
     this.setState({ edit: true, forceTotp: false });
-    // this.props.onClose();
-    // this.props.args.showItemPane(this.props.args);
   };
 
   onUsernameChange = (e) => {
@@ -153,7 +162,21 @@ class PasswordModal extends Component {
       url: newValue,
       urlWarning,
     });
-    // this.setState({ url: e.target.value });
+  };
+
+  onSecondaryUrlChange = (e) => {
+    let urlWarning = "";
+    const maxLength = limits.MAX_URL_LENGTH;
+    let newValue = e.target.value;
+
+    if (newValue.length > maxLength) {
+      newValue = newValue.substring(0, maxLength);
+      urlWarning = `URL length is ${maxLength} chars, truncated`;
+    }
+    this.setState({
+      secondaryUrl: newValue,
+      urlWarning,
+    });
   };
 
   onClose = () => {
@@ -161,11 +184,19 @@ class PasswordModal extends Component {
   };
 
   onSubmit = (title, note) => {
+
+    let url = this.state.url;
+    let secondaryUrl = this.state.secondaryUrl.trim();
+
+    if(secondaryUrl.length) {
+      url = [url, secondaryUrl].join('\x01');
+    }
+
     const pData = [
       title,
       this.state.username,
       this.state.password,
-      this.state.url,
+      url,
       note,
     ];
     const totpSecret = this.state.totpSecret
@@ -283,14 +314,31 @@ class PasswordModal extends Component {
 
     if (typeof this.props.args.item == "undefined") {
       if (atRecordsLimits()) {
+
+        return (
+          <UpgradeModal
+            show={this.props.show}
+            accountData={getUserData()}
+            onClose={this.props.onClose}
+          ></UpgradeModal>
+        );
+
+/*        
         return (
           <PlanLimitsReachedModal
             show={this.props.show}
             onClose={this.props.onClose}
           ></PlanLimitsReachedModal>
         );
+*/        
       }
     }
+
+    let limitedView = false;
+    if(('user_role' in this.props.args.safe) && (this.props.args.safe.user_role == "limited view")) {
+      limitedView = true;
+    }
+    
 
     if (!this.isShown) {
       this.isShown = true;
@@ -302,8 +350,12 @@ class PasswordModal extends Component {
       this.state.showPassword = false;
       if (this.props.args.item) {
         this.state.username = this.props.args.item.cleartext[1];
-        this.state.password = this.props.args.item.cleartext[2];
-        this.state.url = this.props.args.item.cleartext[3];
+        this.state.password = limitedView ? "* hidden *" : this.props.args.item.cleartext[2];
+
+        let urls = this.props.args.item.cleartext[3].trim().split('\x01');
+        this.state.url = urls[0];
+        this.state.secondaryUrl = (urls.length > 1) ? urls[1] : "";
+
         this.state.edit = false;
         this.state.totpSecret =
           this.props.args.item.cleartext.length > 5
@@ -313,6 +365,7 @@ class PasswordModal extends Component {
         this.state.username = "";
         this.state.password = "";
         this.state.url = "";
+        this.state.secondaryUrl = "";
         this.state.totpSecret = "";
         this.state.edit = true;
       }
@@ -320,9 +373,11 @@ class PasswordModal extends Component {
 
     let passwordType = this.state.showPassword ? "text" : "password";
 
+    /*
     const path = this.props.args.folder
       ? this.props.args.folder.path.join(" > ")
       : [];
+    */
 
     const { strongPassword, reason } = isStrongPassword(this.state.password);
 
@@ -445,6 +500,7 @@ class PasswordModal extends Component {
         onEdit={this.onEdit}
         onSubmit={this.onSubmit}
         errorMsg={this.state.errorMsg}
+        limitedView={limitedView}
       >
         <div
           className="itemModalField upper"
@@ -595,6 +651,44 @@ class PasswordModal extends Component {
           </div>
         </div>
 
+        <PasswordModalUrl 
+            item={this.props.args.item} 
+            edit={this.state.edit} 
+            url={this.state.url} 
+            secondaryUrl = {this.state.secondaryUrl}
+            onUrlChange = {this.onUrlChange}
+            onSecondaryUrlChange = {this.onSecondaryUrlChange}
+            showSecondaryUrl = {true}
+          ></PasswordModalUrl>
+
+        {this.state.urlWarning && this.state.urlWarning.length > 0 && (
+          <div style={{ color: "red" }}>{this.state.urlWarning}</div>
+        )}
+
+        {totp}
+
+        <GeneratePasswordModal
+          show={this.state.showModal == "GeneratePasswordModal"}
+          onClose={(dummy, newPassword) => {
+            this.setState({ showModal: "" });
+            if (newPassword) {
+              this.setState({ password: newPassword });
+            }
+          }}
+        ></GeneratePasswordModal>
+      </ItemModal>
+    );
+  }
+}
+
+export default PasswordModal;
+
+
+
+
+
+/*  now in PasswordModalUrl:
+
         <div
           className="itemModalField"
           style={{ display: "flex", position: "relative", marginBottom: 32 }}
@@ -665,24 +759,5 @@ class PasswordModal extends Component {
             </div>
           )}
         </div>
-        {this.state.urlWarning && this.state.urlWarning.length > 0 && (
-          <div style={{ color: "red" }}>{this.state.urlWarning}</div>
-        )}
 
-        {totp}
-
-        <GeneratePasswordModal
-          show={this.state.showModal == "GeneratePasswordModal"}
-          onClose={(dummy, newPassword) => {
-            this.setState({ showModal: "" });
-            if (newPassword) {
-              this.setState({ password: newPassword });
-            }
-          }}
-        ></GeneratePasswordModal>
-      </ItemModal>
-    );
-  }
-}
-
-export default PasswordModal;
+            */

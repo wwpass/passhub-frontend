@@ -82,22 +82,33 @@ table {
   width: 100%;
 }
 
+/*
 .iam_table_scroll_control {
   max-height: calc(100vh - 280px);
   overflow-y: visible;
   overflow-x: hidden;
 }
+*/
+
+/*
+.iam_table tbody{
+  display:block;
+  overflow:auto;
+  height:200px;
+  width:100%;
+}
+
+
+.iam_table thead tr{
+  display:block;
+}
+*/
 
 .iam_table tbody tr {
   border-bottom: 1px solid #e6e6f0;
-  min-height: 48px;
+  height: 48px;
 }
 
-@media (min-width: 576px) {
-  .iam_table tbody tr {
-    min-height: 46px;
-  }
-}
 
 .iam_table tbody tr:hover {
   background: #f8f8fb;
@@ -235,7 +246,7 @@ h1 {
 .itemModalPath {
   font-size: 14px;
   line-height: 22px;
-  color: #1b1b26;
+  color: #009a50;
   padding-top: 10px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -243,15 +254,31 @@ h1 {
   cursor: default;
 }
 
+/*
 .itemModalPath.set-active-folder {
   cursor: pointer;
   color: #009a50;
 }
 
+
 .itemModalPath.set-active-folder:hover {
   cursor: pointer;
   text-decoration: underline;
 }
+*/
+
+.path-element {
+  display:inline;
+  color: #009a50;
+  cursor:pointer;
+}
+
+.path-element:hover {
+  text-decoration: underline;
+}
+
+
+
 
 .modalTitle {
   padding: 32px 0 0 0;
@@ -532,7 +559,7 @@ input.ModalTitle:focus {
   line-height: 24px;
   text-align: end;
   cursor: pointer;
-  width: 7em;
+  width: 8em;
 }
 
 /* -------------------- */
@@ -1099,6 +1126,14 @@ input[type="file"] {
   border: 1px solid #a3a4ab;
 }
 
+.import-modal-file-field .filename {
+  margin-bottom:6px;
+  max-width:330px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .addModalItem {
   height: 48px;
   cursor: pointer;
@@ -1414,147 +1449,17 @@ textarea:focus {
   margin: 7px 0;
 }
 
-/*
-.custom-scroll::-webkit-scrollbar {
-  width: 0.3em;
+.tableFixHead {
+  overflow-y: auto;
+  min-height: 350px;
 }
 
-.custom-scroll::-webkit-scrollbar-thumb {
-  background: rgb(144, 144, 144);
-  border-radius: 0.2em;
+.tableFixHead .table {
+  position: relative;
 }
 
-.custom-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgb(176, 176, 176);
+.tableFixHead thead th {
+  position: sticky;
+  background: rgb(27,27,38);
+  top:0;
 }
-*/
-
-/*
-.custom-scroll::-webkit-scrollbar-track {
-  background: yellow;
-  border-radius: 0.15em;
-}
-*/
-/*
-
-body::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-}
- 
-body::-webkit-scrollbar-thumb {
-  background-color: darkgrey;
-  outline: 1px solid slategrey;
-}
-
-*/
-
-/*
-
-.toast {
-  position: absolute;
-  bottom: 1rem;
-  right: 1rem;
-  background: lightyellow;
-  font-size: 1rem;
-}
-
-.toast-header {
-  background: unset;
-  justify-content: space-between;
-  font-family: OpenSansBold;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 24px;
-  margin: 0 0 6px 0;
-  padding: 0;
-  border: none;
-}
-
-.toast-header button {
-  opacity: 1;
-  color: white;
-  text-shadow: unset;
-}
-
-.toast-header button:hover {
-  color: white;
-}
-
-------
-.toast-ph {
-  padding: 20px 22px 22px;
-
-  background: linear-gradient(282.86deg, #00ba97 8.08%, #00bc62 68.47%);
-  border-radius: 12px;
-}
-----
-
-.toast-ph .btn-primary {
-  background: white;
-  color: #1b1b26;
-  margin: 0 12px 0 0;
-}
-
-.toast-header-ph {
-  font-family: OpenSansBold;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-  line-height: 24px;
-  margin: 0 0 6px 0;
-}
-
-.toast-body-ph {
-  font-family: OpenSans;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 20px;
-
-  color: #ffffff;
-
-  flex: none;
-  order: 1;
-  flex-grow: 0;
-  margin: 6px 0px;
-}
-
-@media (min-width: 576px) {
-  .go-premium-toast {
-    width: 450px;
-    max-width: 450px;
-
-    border-radius: 14px;
-
-    bottom: 32px;
-    right: 32px;
-    left: unset;
-  }
-}
-
-.go-premium-toast .toast-body {
-  padding: 0;
-}
-
-
-.go-premium-toast .btn-outline-secondary {
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  padding: 12px 24px;
-  min-width: 1px;
-}
-.go-premium-toast .btn-outline-secondary:hover {
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.go-premium-toast .btn-outline-secondary:not(:disabled):not(.disabled).active,
-.btn-outline-secondary:not(:disabled):not(.disabled):active,
-active {
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  outline: none;
-  background: 0;
-}
-*/

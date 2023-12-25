@@ -6,13 +6,12 @@ const mockData = {
     {
       name: "Mock Safe",
       id: 1,
-      path: ["Mock Safe"],
+      key: 1,
       items: [],
       folders: [
         {
           SafeID: 1,
           id: "f1",
-          path: ["Mock Safe", "Mock Folder"],
           name: "Mock Folder",
           cleartext: ["Mock Folder"],
           parent: 0,
@@ -30,7 +29,6 @@ const mockData = {
                 "https://gmail.com",
                 "Work mail",
               ],
-              path: ["Mock Safe", "Mock Folder"],
               lastModified: "2021-08-27T02:01:20+00:00",
             },
             {
@@ -45,7 +43,6 @@ const mockData = {
                 "Work mail\r\n kj skajhdah skdal fklasjh ljkah lkjdsh kljdh afljksdh fkljas hfjkdsh afjkah ldh",
               ],
               note:1,
-              path: ["Mock Safe", "Mock Folder"],
               lastModified: "2021-08-27T02:01:20+00:00",
             },
 
@@ -58,7 +55,7 @@ const mockData = {
     {
       name: "Private",
       id: "sp52",
-      path: ["Private"],
+      key:1,
       items: [
         {
           SafeID: 2,
@@ -71,7 +68,6 @@ const mockData = {
             "https://gmail.com",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
         {
@@ -85,7 +81,6 @@ const mockData = {
             "",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
         {
@@ -99,7 +94,6 @@ const mockData = {
             "https://gmail.com",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
         {
@@ -114,7 +108,6 @@ const mockData = {
             "https://longlonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonglonggmail.com",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
         {
@@ -129,7 +122,6 @@ const mockData = {
             "https://gmail.com",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
         {
@@ -143,7 +135,6 @@ const mockData = {
             "https://gmail.com",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
         {
@@ -157,7 +148,6 @@ const mockData = {
             "https://gmail.com",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
         {
@@ -171,7 +161,6 @@ const mockData = {
             "https://gmail.com",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
         {
@@ -185,7 +174,6 @@ const mockData = {
             "https://gmail.com",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
         {
@@ -199,7 +187,6 @@ const mockData = {
             "https://gmail.com",
             "Work mail",
           ],
-          path: ["Private", ],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
       ],
@@ -210,7 +197,6 @@ const mockData = {
         {
           SafeID: 2,
           id: "f21",
-          path: ["Private", "SubFolder"],
           name: "SubFolder",
           cleartext: ["SubFolder"],
           parent: 0,
@@ -221,7 +207,6 @@ const mockData = {
         {
           SafeID: 2,
           id: "f22",
-          path: ["Private", "SubFolder2"],
           name: "SubFolder2",
           cleartext: ["SubFolder2"],
           parent: 0,
@@ -233,11 +218,21 @@ const mockData = {
         {
           SafeID: 2,
           id: "f23",
-          path: ["Private", "SubFolder3"],
           name: "SubFolder3",
           cleartext: ["SubFolder3"],
           parent: 0,
-          folders: [],
+          folders: [
+            {
+              SafeID: 2,
+              id: "f231",
+              name: "SubFolder31",
+              cleartext: ["SubFolder31"],
+              parent: "f23",
+              folders: [],
+              items: [],
+            }
+ 
+          ],
           items: [],
         },
       ],
@@ -249,19 +244,19 @@ const mockData = {
 
 
 
-    { name: "Work", id: 3, path: ["Work"], items: [], folders: [] },
-    { name: "x1", id: 4, path: ["x1"], items: [], folders: [] },
-    { name: "x2", id: 5, path: ["x2"], items: [], folders: [] },
-    { name: "x3", id: 6, path: ["x3"], items: [], folders: [] },
-    { name: "x4", id: 7, path: ["x4"], items: [], folders: [] },
-    { name: "x5", id: 8, path: ["x5"], items: [], folders: [] },
-    { name: "x6", id: 9, path: ["x6"], items: [], folders: [] },
-    { name: "x7", id: 10, path: ["x7"], items: [], folders: [] },
-    { name: "x8", id: 11, path: ["x8"], items: [], folders: [] },
+    { name: "Work", id: 3,  items: [], folders: [] },
+    { name: "x1", id: 4,  items: [], folders: [] },
+    { name: "x2", id: 5,  items: [], folders: [] },
+    { name: "x3", id: 6,  items: [], folders: [] },
+    { name: "x4", id: 7,  items: [], folders: [] },
+    { name: "x5", id: 8,  items: [], folders: [] },
+    { name: "x6", id: 9,  items: [], folders: [] },
+    { name: "x7", id: 10,  items: [], folders: [] },
+    { name: "x8", id: 11,  items: [], folders: [] },
     {
       name: "Cards",
       id: 12,
-      path: ["Cards"],
+      key:1,
       items: [
         {
           SafeID: 12,
@@ -279,7 +274,6 @@ const mockData = {
             "777",
           ],
           version: 5,
-          path: ["Cards"],
           lastModified: "2021-08-27T02:01:20+00:00",
         },
       ],

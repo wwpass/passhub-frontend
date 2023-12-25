@@ -7,6 +7,7 @@ import Form from "react-bootstrap/Form";
 import ItemModalFieldNav from "./itemModalFieldNav";
 import ItemViewIcon from "./itemViewIcon";
 import ModalCross from "./modalCross";
+import PathElement from "./pathElement";
 
 import { putCopyBuffer } from "../lib/copyBuffer";
 import TextareaAutosize from "react-textarea-autosize";
@@ -87,6 +88,10 @@ class ItemModal extends Component {
   };
 
   onEdit = () => {
+    if(('limitedView' in this.props) && this.props.limitedView) {
+      return;
+    }
+
     this.setState({ edit: true });
     if (this.props.onEdit) {
       this.props.onEdit();
@@ -129,9 +134,33 @@ class ItemModal extends Component {
       path = this.props.args.folder.path;
     }
 
-    folderName = path[path.length - 1];
+    folderName = path[path.length - 1][0];
 
-    const pathString = path.join(" > ");
+    // const pathNames = path.map((e) => e[0]);
+    // const pathString = pathNames.join(" > ");
+
+    let pathString = [];
+    for (let i = 0; i < path.length; i++) {
+      pathString.push(
+        <PathElement
+          name={path[i][0]}
+          folderid={path[i][1]}
+          gt={path.length - i - 1}
+          onClick={(f) => this.props.onCloseSetFolder(f)}
+        ></PathElement>
+      );
+    }
+    /*
+    let pathString = path.map((p) => (
+      <PathElement
+        name={path[i][0]}
+        folderid={path[i][1]}
+        gt={path.length - i - 1}
+        onClick={(f) => this.props.onCloseSetFolder(f)}
+      ></PathElement>
+    ));
+*/
+
     /*
     if (this.props.args.folder) {
       path = this.props.args.folder.path.join(" > ");
@@ -161,6 +190,11 @@ class ItemModal extends Component {
     let modalClass = this.state.edit ? "edit" : "view";
 
     const maxHeight = this.props.isNote ? "" : "150px";
+
+    let limitedView = false;
+    if(('limitedView' in this.props) && this.props.limitedView) {
+      limitedView = true;
+    }
 
     return (
       <Modal
@@ -204,17 +238,16 @@ class ItemModal extends Component {
         </div>
 
         <div className="itemModalNav">
-          <div
-            className="itemModalPath d-none d-sm-block set-active-folder"
-            onClick={this.props.onCloseSetFolder}
-          >
+          <div className="itemModalPath d-none d-sm-block set-active-folder">
             {pathString}
           </div>
-          {!this.state.edit ? (
+          { (!this.state.edit && !limitedView) ? (
             <div className="itemModalTools">
               {/*
                 <ItemViewIcon iconId="#f-history" opacity="1" title="History" />
                 */}
+
+              {!this.props.limitedView  } 
               <ItemViewIcon
                 iconId="#f-move"
                 title="Move"
@@ -249,11 +282,14 @@ class ItemModal extends Component {
               </div>
             </div>
           ) : (
-            <div className="itemModalTools edit">
-              <div className="itemModalEditButton" onClick={this.onSubmit}>
-                <span style={{ verticalAlign: "top" }}>Save</span>
-              </div>
-            </div>
+            <>
+            {!limitedView && (
+              <div className="itemModalTools edit">
+                <div className="itemModalEditButton" onClick={this.onSubmit}>
+                  <span style={{ verticalAlign: "top" }}>Save</span>
+                </div>
+              </div> )}
+            </>              
           )}
         </div>
 

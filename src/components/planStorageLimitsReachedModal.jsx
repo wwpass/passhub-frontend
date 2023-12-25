@@ -32,12 +32,12 @@ class PlanStorageLimitsReacheModal extends Component {
     const message = upgrade ? (
       <p>
         Maximum storage size for your <b>{account.plan}</b> plan is{" "}
-        <b>{humanReadableFileSize(account.MAX_STORAGE)}</b>. You have alreaady
+        <b>{humanReadableFileSize(account.maxStorage)}</b>. You have alreaady
         used <b>{humanReadableFileSize(totalStorage())}</b>.
       </p>
     ) : (
       <p>
-        Maximum storage size is {humanReadableFileSize(account.MAX_STORAGE)}.
+        Maximum storage size is {humanReadableFileSize(account.maxStorage)}.
         You already have <b>{humanReadableFileSize(totalStorage())}</b>.
       </p>
     );
@@ -97,19 +97,3 @@ class PlanStorageLimitsReacheModal extends Component {
 }
 
 export default PlanStorageLimitsReacheModal;
-
-/*
-
-          <InputField
-            value={this.state.discount}
-            id="upgrade-discount"
-            label="Discount"
-            onChange={this.onDiscountChange}
-            edit
-          >
-            <Button variant="primary" type="button" onClick={this.onApply}>
-              Apply
-            </Button>
-          </InputField>
-
-          */

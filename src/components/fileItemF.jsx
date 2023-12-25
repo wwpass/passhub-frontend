@@ -19,11 +19,11 @@ function FileItem(props) {
   return (
     <tr className="d-flex" style={{ alignItems: "center" }}>
       <td
-        draggable
         id={`drag${item._id}`}
+        draggable
         onDragStart={dragStart}
         colSpan="2"
-        className="col-md-12 col-lg-8 col-xl-6"
+        className="col-sm-12 col-md-6 col-lg-4 col-xl-6"
         onClick={showModal}
         style={{ cursor: "pointer" }}
       >
@@ -39,13 +39,15 @@ function FileItem(props) {
           {item.cleartext[0]}
         </div>
         {props.searchMode && (
-          <div className="search-path">{item.path.join(" > ")}</div>
+          <div className="search-path">
+            {item.path.map((e) => e[0]).join(" > ")}
+          </div>
         )}
       </td>
-      <td className="rightAlign d-none d-lg-table-cell col-lg-4 col-xl-3">
+      <td className="d-none d-md-table-cell        col-md-6 col-lg-4 col-xl-3 rightAlign">
         {humanReadableFileSize(item.file.size)}
       </td>
-      <td className="column-modified d-none d-xl-table-cell col-xl-3">
+      <td className="d-none d-lg-table-cell                 col-lg-4 col-xl-3 column-modified">
         {lastModified(item)}
       </td>
     </tr>

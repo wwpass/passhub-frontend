@@ -6,6 +6,14 @@ function FolderItem(props) {
     props.onClick(props.item);
   };
 
+  function dragStart(ev) {
+    // Change the source element's background color to signify drag has started
+    // ev.currentTarget.style.border = "dashed";
+    ev.dataTransfer.setData("application/json", JSON.stringify({type: "folder", id: props.item.id, SafeID: props.item.SafeID }));
+    // Tell the browser both copy and move are possible
+    ev.effectAllowed = "move";
+  }
+
   function onDrop(ev) {
     ev.currentTarget.style.background = "none";
     ev.currentTarget.style.border = "none";
@@ -54,16 +62,24 @@ function FolderItem(props) {
         className="col-md-12 col-lg-8 col-xl-9"
         onClick={onClick}
         style={{ cursor: "pointer" }}
+        draggable
+        onDragStart={dragStart}
       >
         <div onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave}>
-          <svg width="24" height="24" className="itemIcon">
+          <svg width="24" height="24" className="itemIcon" style={{ cursor: "move" }}>
             <use href="#i-folder"></use>
           </svg>
           {props.item.cleartext[0]}
           {angleIcon}
         </div>
+        {props.searchMode && (
+          <div className="search-path">
+            {props.item.path.map((e) => e[0]).join(" > ")}
+          </div>
+        )}
+
       </td>
-      <td className="column-modified d-none d-xl-table-cell col-xl-3">
+      <td className="d-none d-lg-table-cell                 col-lg-4 col-xl-3 column-modified">
         {lastModified(props.item)}
       </td>
     </tr>

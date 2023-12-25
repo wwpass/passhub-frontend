@@ -37,6 +37,7 @@ class InputField extends Component {
             spellCheck={false}
             value={this.props.value}
             placeholder={this.props.label}
+            autoFocus={this.props.autoFocus} 
           ></input>
         </div>
       </div>

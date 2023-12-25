@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import axios from "axios";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import ModalCross from "./modalCross";
@@ -7,6 +8,12 @@ import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 
 import CheckBox from "./checkBox";
+
+import {
+  getApiUrl,
+  getVerifier,
+} from "../lib/utils";
+
 import generatePassword from "password-generator";
 
 class GeneratePasswordModal extends Component {
@@ -27,12 +34,23 @@ class GeneratePasswordModal extends Component {
   }
 
   onSubmit = () => {
+    // this.updatePreferences();
     this.props.onClose("dummy", this.password);
   };
 
   onSliderChange = (value) => {
     this.setState({ passwordLength: value });
   };
+
+  updatePreferences = () => {
+    const {passwordLength, uppercase, lowercase, digits, specialChars} = this.state;
+    axios
+    .post(`${getApiUrl()}account.php`, {
+      operation: "generator",
+      verifier: getVerifier(),
+      value: {passwordLength, uppercase, lowercase, digits, specialChars}
+    })    
+  }
 
   genPassword = () => {
     const len = this.state.passwordLength;

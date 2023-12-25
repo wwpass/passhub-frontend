@@ -7,6 +7,7 @@ import * as passhubCrypto from "../lib/crypto";
 import {
   getApiUrl,
   getVerifier,
+  getUserData,
   atRecordsLimits,
   atStorageLimits,
   isMobile,
@@ -14,7 +15,11 @@ import {
 } from "../lib/utils";
 
 import DownloadAndViewButtons from "./downloadAndViewButtons";
-import PlanLimitsReachedModal from "./planLimitsReachedModal";
+
+import UpgradeModal from "./upgradeModal";
+
+// import PlanLimitsReachedModal from "./planLimitsReachedModal";
+
 import PlanStorageLimitsReachedModal from "./planStorageLimitsReachedModal";
 
 import ItemModal from "./itemModal";
@@ -366,12 +371,22 @@ class FileModal extends Component {
 
     if (typeof this.props.args.item == "undefined") {
       if (atRecordsLimits()) {
+
+        return (
+          <UpgradeModal
+            show={this.props.show}
+            accountData={getUserData()}
+            onClose={this.props.onClose}
+          ></UpgradeModal>
+        );
+/*        
         return (
           <PlanLimitsReachedModal
             show={this.props.show}
             onClose={this.props.onClose}
           ></PlanLimitsReachedModal>
         );
+*/        
       }
 
       if (atStorageLimits()) {
@@ -448,6 +463,7 @@ class FileModal extends Component {
                 type="file"
                 id="inputFileModal"
                 onChange={this.onFileInputChange}
+                multiple={true}
               ></input>
             </div>
           ) : (

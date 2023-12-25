@@ -67,13 +67,19 @@ function importEntry(entry) {
   }
 
   else {
+    result.URL = (typeof result.URL === 'string') ? result.URL : '';
+    if(typeof result.KP2A_URL === 'string') {
+      result.URL = [result.URL, result.KP2A_URL].join('\x01')
+    }
+
     cleartext = [
       (typeof result.Title === 'string') ? result.Title : 'unnamed',
       (typeof result.UserName === 'string') ? result.UserName : '',
       (typeof result.Password === 'string') ? result.Password : '',
-      (typeof result.URL === 'string') ? result.URL : '',
+      result.URL,
       (typeof result.Notes === 'string') ? result.Notes : '',
     ];
+
     if (typeof result.TOTP === 'string') {
       cleartext.push(result.TOTP);
     }
@@ -128,7 +134,7 @@ function getFolders(group) {
 function importGroup(group) {
   return {
     name: group.Name,
-    entries: getEntries(group),
+    items: getEntries(group),
     folders: getFolders(group),
   };
 }

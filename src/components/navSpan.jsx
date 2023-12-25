@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import axios from "axios";
-import { getApiUrl, getVerifier } from "../lib/utils";
+import { getApiUrl, getVerifier, serverLog } from "../lib/utils";
 import AccountDropDown from "./accountDropDown";
 import ContactUsModal from "./contactUsModal";
 import MessageModal from "./messageModal";
@@ -11,17 +11,52 @@ import VerifyEmailModal from "./verifyEmailModal";
 import DeleteAccountModal from "./deleteAccountModal";
 import DeleteAccountFinalModal from "./deleteAccountFinalModal";
 
+let wrongOrigin = 0;
+
+
 class NavSpan extends Component {
   state = { showModal: "", accountData: {} };
 
   init = window.addEventListener(
     "message",
     (event) => {
-      if (event.data === "payment_success") {
-        // console.log("Message event");
-        // console.log(event);
-        this.getAccountData();
+      console.log('got message');
+      console.log(event);
+
+      if(event.origin !== window.location.origin) {
+        if(wrongOrigin < 5) {
+          // report warning to the server, however harmless in our case
+          serverLog(`payment message orign ${event.origin}`)
+          wrongOrigin++;
+        }
+        console.log(`payment message origin ${event.origin}`);
+        return;
       }
+      if (event.data == "payment_success") {
+          this.getAccountData();
+      }
+
+      if (event.data == "payment_cancel") {
+        serverLog("Payment cancel");
+
+        axios
+        .post(`${getApiUrl()}payments/session_cancel.php`, {verifier: getVerifier()})
+        .then((reply) => {
+          const result = reply.data;
+          if (result.status === "Ok") {
+            return;
+          }
+          if (result.status === "login") {
+            window.location.href = "expired.php";
+            return;
+          }
+          return;
+        })
+        .catch((err) => {
+          this.setState({ errorMsg: "Server error. Please try again later" });
+        });
+      }
+
     },
     false
   );
@@ -69,7 +104,6 @@ class NavSpan extends Component {
   };
 
   handleMenuCommand = (cmd) => {
-    console.log("handleMenuCommand ", cmd);
     if (cmd === "Contact us") {
       this.setState({ showModal: "Contact us" });
       return;
@@ -227,6 +261,7 @@ class NavSpan extends Component {
             </MessageModal>
             <UpgradeModal
               show={this.state.showModal === "upgrade"}
+              accountData={this.state.accountData}
               onClose={() => {
                 this.setState({ showModal: "" });
               }}

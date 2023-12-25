@@ -7,7 +7,9 @@ import axios from "axios";
 import ModalCross from "./modalCross";
 import ItemModalFieldNav from "./itemModalFieldNav";
 
-import PlanLimitsReachedModal from "./planLimitsReachedModal";
+// import PlanLimitsReachedModal from "./planLimitsReachedModal";
+import UpgradeModal from "./upgradeModal";
+
 import PlanStorageLimitsReachedModal from "./planStorageLimitsReachedModal";
 
 import progress from "../lib/progress";
@@ -21,8 +23,71 @@ import {
   humanReadableFileSize,
 } from "../lib/utils";
 
+
+
+const uploadFileP = (theFile, SafeID, folderID, note, aesKey) => 
+  theFile.arrayBuffer()
+  .then( pFileContent => {
+    console.log(Date.now());
+    console.log('got arrayBuffer ' + theFile.name);
+
+    const { fileInfo, cFileContent } = passhubCrypto.encryptFile(
+      pFileContent,
+      aesKey
+    );
+    const title = theFile.name;    
+
+    const pData = [title, "", "", "", note];
+    const options = {};
+
+    const eData = passhubCrypto.encryptItem(
+      pData,
+      aesKey,
+      options
+    );
+
+    const data = new FormData();
+    data.append("vault", SafeID);
+    data.append("folder", folderID);
+    data.append("verifier", getVerifier());
+
+    data.append("meta", eData);
+    data.append("file", fileInfo);
+    const ab = passhubCrypto.str2uint8(cFileContent);
+    const bl = new Blob([ab]);
+    data.append("blob", bl);
+    return axios
+    .post(`${getApiUrl()}create_file.php`, data, {
+      headers: {
+        "content-type": "multipart/form-data",
+      },
+      timeout: 600000,
+    })
+    .then( result => {
+      console.log(Date.now());
+      console.log("64 axios result " + title);
+      console.log(result);
+      if(result.data.status != "Ok") {
+        throw new Error(result.data.status);
+        // throw error
+      }
+      return result;
+    })
+  })
+  
+function uploadFiles(files, SafeID, folderID, note, aesKey) {
+
+    let promise = Promise.resolve();
+    for(let i = 0; i < files.length; i++) {
+      promise = promise.then(() => uploadFileP(files[i], SafeID, folderID, note, aesKey))
+    }
+    // promise.then(() => console.log('all done...'));
+    console.log(promise);
+    return promise;
+}
+
 class CreateFileModal extends React.Component {
-  state = { errorMsg: "", theFile: "", note: "" };
+  state = { errorMsg: "", files: "", note: "" };
 
   isShown = false;
 
@@ -32,43 +97,20 @@ class CreateFileModal extends React.Component {
 
   onFileInputChange = (e) => {
     this.setState({
-      theFile: e.target.files[0],
+      files: e.target.files,
       errorMsg: "",
     });
 
-    if (e.target.files[0].size > getUserData().MAX_FILE_SIZE) {
-      this.setState({
-        errorMsg: `File too large: ${humanReadableFileSize(
-          e.target.files[0].size
-        )}, max ${humanReadableFileSize(getUserData().MAX_FILE_SIZE)}`,
-      });
-      return;
-    }
-    const { type, size, lastModifiedDate } = e.target.files[0];
-    console.log(type, size, lastModifiedDate);
   };
 
   onNoteChange = (e) => this.setState({ note: e.target.value });
 
   onSubmit = () => {
-    if (!this.props.args.item && !this.state.theFile) {
+    if (!this.props.args.item && !this.state.files) {
       this.setState({ errorMsg: "No file defined" });
       return;
     }
-    if (this.state.theFile.size > getUserData().MAX_FILE_SIZE) {
-      this.setState({
-        errorMsg: `File too large: ${humanReadableFileSize(
-          this.state.theFile.size
-        )}, max ${humanReadableFileSize(getUserData().MAX_FILE_SIZE)}`,
-      });
-      return;
-    }
-    const title = this.state.theFile.name;
-    const { note } = this.state;
-
-    const pData = [title, "", "", "", note];
-    const options = {};
-
+    
     const [aesKey, SafeID, folderID] = this.props.args.folder.safe
       ? [
           this.props.args.folder.safe.bstringKey,
@@ -77,138 +119,52 @@ class CreateFileModal extends React.Component {
         ]
       : [this.props.args.folder.bstringKey, this.props.args.folder.id, 0];
 
-    const eData = passhubCrypto.encryptItem(
-      pData,
-      aesKey,
-      // init.safe.bstringKey, ?? TODO
-      options
-    );
-
-    if (this.props.args.item) {
-      progress.lock(0, "rename");
-      axios
-        .post(`${getApiUrl()}file_ops.php`, {
-          verifier: getVerifier(),
-          operation: "rename",
-          SafeID,
-          itemId: this.props.args.item._id,
-          newName: eData,
-        })
-        .then((reply) => {
-          progress.unlock();
-          const result = reply.data;
-          if (result.status == "Ok") {
-            this.props.onClose(true);
-            return;
-          }
-          if (result.status === "login") {
-            window.location.href = "login.php";
-            return;
-          }
-          if (result.status === "expired") {
-            window.location.href = "expired.php";
-            return;
-          }
-          this.setState({ errorMsg: result.status });
-          return;
-        })
-        .catch((err) => {
-          progress.unlock();
-          this.setState({ errorMsg: "Server error. Please try again later" });
-        });
+    progress.lock(0, "file upload");
+    return uploadFiles( this.state.files, SafeID, folderID, this.state.note, aesKey)
+    .then(() => {
+      progress.unlock();      
+      console.log("129 uploaded")
+      this.props.onClose(true);
       return;
-    }
-
-    const reader = new FileReader();
-
-    progress.lock(0, "Encrypting file.");
-    reader.readAsArrayBuffer(this.state.theFile);
-
-    reader.onerror = (err) => {
-      let error = "Error reading file";
-      /*      
-      if (
-        err.currentTarget &&
-        err.currentTarget.error &&
-        err.currentTarget.error.message
-      ) {
-        error = err.currentTarget.error;
-      }
-      */
-      if (reader.error && reader.error.message) {
-        error = reader.error.message;
-      }
-      this.setState({ errorMsg: error });
-    };
-
-    reader.onload = () => {
-      const { fileInfo, cFileContent } = passhubCrypto.encryptFile(
-        reader.result,
-        aesKey
-      );
-      progress.unlock();
-      progress.lock(0, "Uploading. ");
-
-      const data = new FormData();
-      data.append("vault", SafeID);
-      data.append("folder", folderID);
-      data.append("verifier", getVerifier());
-
-      data.append("meta", eData);
-      data.append("file", fileInfo);
-      const ab = passhubCrypto.str2uint8(cFileContent);
-      const bl = new Blob([ab]);
-      data.append("blob", bl);
-      //       progress.lock();
-
-      axios
-        .post(`${getApiUrl()}create_file.php`, data, {
-          headers: {
-            "content-type": "multipart/form-data",
-          },
-          timeout: 600000,
-        })
-        .then((reply) => {
-          progress.unlock();
-          const result = reply.data;
-          if (result.status == "Ok") {
-            this.props.onClose(true);
-            return;
-          }
-          if (result.status === "login") {
-            window.location.href = "login.php";
-            return;
-          }
-          if (result.status === "expired") {
-            window.location.href = "expired.php";
-            return;
-          }
-          this.setState({ errorMsg: result.status });
+    })
+    .catch(err => {
+      progress.unlock();      
+      console.log(`upload file promise rejected`);
+      console.log(err);
+      if(err.message == "login") {
+          window.location.href = "expired.php";
           return;
-        })
-        .catch((err) => {
-          progress.unlock();
-          this.setState({ errorMsg: "Server error. Please try again later" });
-        });
-    };
-  };
+      }
+      if(err.message == "expired") {
+        window.location.href = "expired.php";
+        return;
+    }
+    this.setState({ errorMsg: err.message});
+    });
+  }
 
   render() {
     if (!this.props.show) {
       if (this.isShown) {
-        this.setState({ errorMsg: "", theFile: "", note: "" });
+        this.setState({ errorMsg: "", files: [], note: "" });
       }
       this.isShown = false;
       return null;
     }
     this.isShown = true;
 
+    let fileNameArray = [];
+    for(let i=0; i < this.state.files.length; i++ ) {
+      fileNameArray.push(this.state.files[i].name);
+    }
+
     if (atRecordsLimits()) {
       return (
-        <PlanLimitsReachedModal
+        <UpgradeModal
           show={this.props.show}
+          accountData={getUserData()}
           onClose={this.props.onClose}
-        ></PlanLimitsReachedModal>
+        ></UpgradeModal>
       );
     }
 
@@ -258,13 +214,14 @@ class CreateFileModal extends React.Component {
                 overflowWrap: "anywhere",
               }}
             >
-              {this.state.theFile ? this.state.theFile.name : "Choose file"}
+              {(fileNameArray.length == 0) &&  (<div className="filename" style={{marginBottom:"6px", maxWidth:"330px", overflow: "hidden", whiteSpace:"nowrap", textOverflow:"ellipsis", }}>Choose file(s)</div>)}
+              {fileNameArray.map((f) => (<div className="filename">{f}</div>))}
             </div>
-            <Button variant="primary" type="submit" onClick={this.onSubmit}>
+            <Button variant="primary" type="submit" onClick={this.onSubmit} style={{height: "48px", marginTop: ((fileNameArray.length > 1)? "12px": "0") }}>
               Browse
             </Button>
 
-            <input type="file" onChange={this.onFileInputChange}></input>
+            <input type="file" onChange={this.onFileInputChange} multiple></input>
           </div>
           <div className="itemNoteModalField">
             <ItemModalFieldNav name="Note" />

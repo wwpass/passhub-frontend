@@ -50,7 +50,7 @@ class UserRecord extends Component {
           <td>
             <b>{user.shared_safe_cnt}</b>
           </td>
-          <td className="d-none d-lg-table-cell" style={{ textAlign: "right" }}>
+          <td className="d-none d-lg-table-cell" style={{ textAlign: "right", paddingRight:"0.5em"}}>
             <b>That's you</b>
           </td>
         </tr>
@@ -133,14 +133,14 @@ class UserRecord extends Component {
         <td className="email">{this.props.user.email}</td>
         <td>{user.safe_cnt}</td>
         <td>{user.shared_safe_cnt}</td>
-        <td className="d-none d-lg-table-cell" style={{ textAlign: "right" }}>
-          {new Date(this.props.user.lastSeen).toLocaleString([], {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+        <td className="d-none d-lg-table-cell" style={{ textAlign: "right", paddingRight: "0.5em" }}>
+            {new Date(this.props.user.lastSeen).toLocaleString([], {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
         </td>
       </tr>
     );

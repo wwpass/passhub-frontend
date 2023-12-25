@@ -10,6 +10,7 @@ import {
   getWsUrl,
   getVerifier,
   setUserData,
+  serverLog
 } from "../lib/utils";
 import * as extensionInterface from "../lib/extensionInterface";
 
@@ -30,6 +31,7 @@ import { toBeDisabled } from "@testing-library/jest-dom/dist/matchers";
 let wsConnector;
 
 function decryptSafeData(safe, aesKey) {
+  /*
   for (let i = 0; i < safe.items.length; i += 1) {
     safe.items[i].cleartext = passhubCrypto.decodeItem(safe.items[i], aesKey);
   }
@@ -40,8 +42,17 @@ function decryptSafeData(safe, aesKey) {
       aesKey
     );
   }
+  */
+  for (const item of safe.items) {
+    item.cleartext = passhubCrypto.decodeItem(item, aesKey);
+  }
+
+  for (const folder of safe.folders) {
+    folder.cleartext = passhubCrypto.decodeFolder(folder, aesKey);
+  }
 }
 
+/*
 function decryptSafes(eSafes) {
   // console.log("xxx");
   const promises = [];
@@ -59,13 +70,46 @@ function decryptSafes(eSafes) {
   }
   return Promise.all(promises);
 }
+*/
+
+function decryptSafes(eSafes) {
+  const promises = eSafes.map((safe) =>
+    passhubCrypto.decryptAesKey(safe.key).then((bstringKey) => {
+      safe.bstringKey = bstringKey;
+      safe.name = passhubCrypto.decryptSafeName(safe, safe.bstringKey);
+      return decryptSafeData(safe, safe.bstringKey);
+    })
+  );
+  return Promise.all(promises);
+}
+
+/*
+  const promises = [];
+
+
+  for (let i = 0; i < eSafes.length; i++) {
+    const safe = eSafes[i];
+    if (safe.key) {
+      promises.push(
+        passhubCrypto.decryptAesKey(safe.key).then((bstringKey) => {
+          safe.bstringKey = bstringKey;
+          safe.name = passhubCrypto.decryptSafeName(safe, safe.bstringKey);
+          return decryptSafeData(safe, safe.bstringKey);
+        })
+      );
+    }
+  }
+  return Promise.all(promises);
+}
+  */
+
 function normalizeFolder(folder, items, folders) {
   folder.contentModificationDate = folder.lastModified
     ? folder.lastModified
     : "-";
   folder.name = folder.cleartext[0];
   folder.id = folder._id;
-  folder.path = [...folder.path, folder.cleartext[0]];
+  folder.path = [...folder.path, [folder.cleartext[0], folder.id]];
 
   folder.items = [];
   for (const item of items) {
@@ -107,12 +151,12 @@ function normalizeFolder(folder, items, folders) {
 function normalizeSafes(safes) {
   for (const safe of safes) {
     safe.rawItems = safe.items;
-    safe.path = [safe.name];
+    safe.path = [[safe.name, safe.id]];
     safe.items = [];
     for (const item of safe.rawItems) {
       if (!item.folder || item.folder == "0") {
         safe.items.push(item);
-        item.path = [safe.name];
+        item.path = safe.path;
       }
     }
     safe.items.sort((a, b) =>
@@ -124,7 +168,7 @@ function normalizeSafes(safes) {
     for (const folder of safe.rawFolders) {
       if (!folder.parent || folder.parent == "0") {
         safe.folders.push(folder);
-        folder.path = [safe.name];
+        folder.path = safe.path;
         folder.safe = safe;
         normalizeFolder(folder, safe.rawItems, safe.rawFolders);
       }
@@ -133,6 +177,29 @@ function normalizeSafes(safes) {
       a.cleartext[0].toLowerCase().localeCompare(b.cleartext[0].toLowerCase())
     );
   }
+}
+
+
+function hostInItem(hostname, item) {
+    const urls = item.cleartext[3].split("\x01");
+
+    for(let url of urls) {
+      try {
+        url = url.toLowerCase();
+        if (url.substring(0, 4) != "http") {
+          url = "https://" + url;
+        }
+        url = new URL(url);
+        let itemHost = url.hostname.toLowerCase();
+        if (itemHost.substring(0, 4) === "www.") {
+          itemHost = itemHost.substring(4);
+        }
+        if (itemHost == hostname) {
+          return true;
+        }
+      } catch (err) {}
+    }
+    return false
 }
 
 class MainPage extends Component {
@@ -158,6 +225,7 @@ class MainPage extends Component {
   constructor(props) {
     super(props);
     this.safePaneRef = React.createRef();
+    this.userDataJustLoaded = false;
 
     extensionInterface.connect(this.advise);
 
@@ -206,8 +274,16 @@ class MainPage extends Component {
       }
       this.setState({ openNodes: openNodesCopy });
     }
-
+    this.userDataJustLoaded = true;
+   
     this.setState({ activeFolder: folder });
+
+    axios
+    .post(`${getApiUrl()}folder_ops.php`, {
+      operation: "current_safe",
+      verifier: getVerifier(),
+      id: folder.SafeID ? folder.SafeID : folder.id,
+    })    
   };
 
   openParentFolder = (folder) => {
@@ -223,10 +299,7 @@ class MainPage extends Component {
   };
 
   refreshUserData = ({ safes = [], newFolderID, broadcast = true } = {}) => {
-    console.log(safes);
-    console.log(newFolderID);
     if (broadcast && wsConnector) {
-      console.log(JSON.stringify(safes));
       wsConnector.send(JSON.stringify(safes));
     }
 
@@ -265,11 +338,13 @@ class MainPage extends Component {
               activeFolder = data.safes[0];
             }
             setUserData(data);
-            console.log("setting new state with updated data");
             progress.unlock();
 
+            this.userDataJustLoaded = true;
             this.setState(data);
-            this.setActiveFolder(activeFolder);
+            if(this.props.searchString.trim().length === 0) {
+              this.setActiveFolder(activeFolder);
+            }
           });
           return;
         }
@@ -303,6 +378,8 @@ class MainPage extends Component {
       mockData.activeFolder = mockData.safes[0];
       mockData.safes[0].folders[0].safe = mockData.safes[0];
       mockData.safes[1].folders[0].safe = mockData.safes[1];
+      normalizeSafes(mockData.safes);
+
       this.setState(mockData);
       if ("goPremium" in mockData && mockData.goPremium == true) {
         self.props.showToast("goPremiumToast");
@@ -344,9 +421,10 @@ class MainPage extends Component {
                     console.log(err);
                   }
                 } else {
-                  console.log("websocket disbled");
+                  console.log("websocket disabled");
                 }
 
+                this.userDataJustLoaded = true;
                 progress.unlock();
                 self.setState(data);
                 if ("goPremium" in data && data.goPremium == true) {
@@ -357,13 +435,15 @@ class MainPage extends Component {
                 keepTicketAlive(data.WWPASS_TICKET_TTL, data.ticketAge);
               });
             })
-            .catch((err) => {
+            
+            .catch(err => {
               if (window.location.href.includes("debug")) {
                 alert(`387: ${err}`);
                 return;
               }
               window.location.href = `error_page.php?js=387&error=${err}`;
             });
+            
         }
         if (result.data.status === "login") {
           window.location.href = "expired.php";
@@ -371,10 +451,12 @@ class MainPage extends Component {
           return;
         }
       })
+      
       .catch((error) => {
         progress.unlock();
         console.log(error);
       });
+      
   };
 
   pageDataLoaded = false;
@@ -384,12 +466,39 @@ class MainPage extends Component {
       this.pageDataLoaded = true;
       this.getPageData();
     }
+/*    
+    if(this.userDataJustLoaded) {
+      this.userDataJustLoaded = false;
+      document.querySelector(".active_folder").scrollIntoView();
+    }
+*/    
   }
 
   componentDidUpdate() {
     if (!this.pageDataLoaded && this.props.show) {
       this.pageDataLoaded = true;
       this.getPageData();
+    }
+    if(this.userDataJustLoaded) {
+      this.userDataJustLoaded = false;
+
+      const activeFolder = document.querySelector(".active_folder");
+      if(!activeFolder) {
+        return;
+      }
+
+      const scrollControl = document.querySelector(".safe_scroll_control.d-none");
+      if(!scrollControl.offsetParent) {
+        return;
+      }
+      
+      const activeFolderRect = activeFolder.getBoundingClientRect();
+      const scrollControlRect = scrollControl.getBoundingClientRect();
+      if (activeFolderRect.bottom > (scrollControlRect.top + scrollControl.scrollTop + scrollControl.offsetHeight)) {
+          activeFolder.scrollIntoView(false);
+      } else if (activeFolderRect.top < (scrollControlRect.top + scrollControl.scrollTop)) {
+        activeFolder.scrollIntoView();
+      } 
     }
   }
 
@@ -417,19 +526,39 @@ class MainPage extends Component {
   };
 
   searchFolder = {
-    path: ["Search results"],
+    path: [["Search results", 0]],
     folders: [],
     items: [],
   };
 
+  searchFolders(what) {
+    const result = [];
+    const lcWhat = what.toLowerCase();
+    for (const safe of this.state.safes) {
+      if (safe.key) {
+        // key!= null => confirmed, better have a class
+        for (const folder of safe.rawFolders) {
+          if (folder.cleartext[0].toLowerCase().indexOf(lcWhat) >= 0) {
+            result.push(folder);
+          }
+        }
+      }
+    }
+
+    result.sort((a, b) =>
+      a.cleartext[0].toLowerCase().localeCompare(b.cleartext[0].toLowerCase())
+    );
+    return result;
+  }
+
+
   search(what) {
     const result = [];
     const lcWhat = what.toLowerCase();
-    for (let s = 0; s < this.state.safes.length; s += 1) {
-      if (this.state.safes[s].key) {
+    for (const safe of this.state.safes) {
+      if (safe.key) {
         // key!= null => confirmed, better have a class
-        for (let i = 0; i < this.state.safes[s].rawItems.length; i += 1) {
-          let item = this.state.safes[s].rawItems[i];
+        for (const item of safe.rawItems) {
           let found = false;
 
           if (item.cleartext.length == 8) {
@@ -464,48 +593,60 @@ class MainPage extends Component {
     return result;
   }
 
-  advise = (url) => {
-    const u = new URL(url);
-    let hostname = u.hostname.toLowerCase();
-    if (hostname.substring(0, 4) === "www.") {
-      hostname = hostname.substring(4);
-    }
-    const result = [];
-    if (hostname) {
-      for (let s = 0; s < this.state.safes.length; s += 1) {
-        const safe = this.state.safes[s];
-        if (safe.key) {
-          // key!= null => confirmed, better have a class
-          const items = safe.rawItems;
-          for (let i = 0; i < items.length; i += 1) {
-            try {
-              let itemUrl = items[i].cleartext[3].toLowerCase();
-              if (itemUrl.substring(0, 4) != "http") {
-                itemUrl = "https://" + itemUrl;
-              }
-
-              itemUrl = new URL(itemUrl);
-              let itemHost = itemUrl.hostname.toLowerCase();
-              if (itemHost.substring(0, 4) === "www.") {
-                itemHost = itemHost.substring(4);
-              }
-              if (itemHost == hostname) {
-                result.push({
-                  safe: safe.name,
-                  title: items[i].cleartext[0],
-                  username: items[i].cleartext[1],
-                  password: items[i].cleartext[2],
-                });
-              }
-            } catch (err) {}
+  paymentCards = () => {
+    const cards = [];
+    for (const safe of this.state.safes) {
+      if (safe.key) {
+        // key!= null => confirmed, better have a class
+        for (const item of safe.rawItems) {
+          if (item.version === 5 && item.cleartext[0] === "card") {
+            cards.push({
+              safe: safe.name,
+              title: item.cleartext[1],
+              card: item.cleartext,
+            });
           }
         }
       }
     }
-    return result;
+    return { id: "payment", found: cards };
+  };
+
+  advise = (what) => {
+    if (what.id === "payment page") {
+      return this.paymentCards();
+    }
+    if (what.id === "advise request" || what.id === "not a payment page") {
+      const u = new URL(what.url);
+      let hostname = u.hostname.toLowerCase();
+      if (hostname.substring(0, 4) === "www.") {
+        hostname = hostname.substring(4);
+      }
+      const result = [];
+      if (hostname) {
+        for (const safe of this.state.safes) {
+          if (safe.key) {
+            // key!= null => confirmed, better have a class
+            const items = safe.rawItems;
+            for (const item of items) {
+              if(hostInItem(hostname, item)) {
+                result.push({
+                  safe: safe.name,
+                  title: item.cleartext[0],
+                  username: item.cleartext[1],
+                  password: item.cleartext[2],
+                });
+              }
+            }
+          }
+        }
+      }
+      return { id: "advise", hostname, found: result };
+    }
   };
 
   doMove = (node, pItem, operation) => {
+
     dropAndPaste
       .doMove(this.state.safes, node, pItem, operation)
       .then((status) => {
@@ -516,7 +657,7 @@ class MainPage extends Component {
         }
         if (status === "no src write") {
           this.setState({
-            showModal: "ImportModal",
+            showModal: "NoRightsModal",
             messageModalArgs: {
               message:
                 'Sorry, "Move" operation is forbidden. You have only read access to the source safe.',
@@ -535,6 +676,8 @@ class MainPage extends Component {
           });
           return;
         }
+        console.log(`Unkown status -${status}-`)
+        return;
       })
       .catch((err) => {
         console.log(err.message);
@@ -559,6 +702,17 @@ class MainPage extends Component {
           });
           return;
         }
+        if (err.message === "drop into child") {
+          this.setState({
+            showModal: "NoRightsModal",
+            messageModalArgs: {
+              message:
+                'Sorry, cannot move to the child folder.',
+            },
+          });
+          return;
+        }
+
       });
   };
 
@@ -583,6 +737,7 @@ class MainPage extends Component {
     const searchString = this.props.searchString.trim();
     if (searchString.length > 0) {
       this.searchFolder.items = this.search(searchString);
+      this.searchFolder.folders = this.searchFolders(searchString);
 
       const safePane = document.querySelector("#safe_pane");
 

@@ -43,14 +43,8 @@ class Root extends Component {
     super(props);
 
     if (!window.location.protocol.toLowerCase().startsWith("http")) {
-      // extension
+      // extension, not used ??
       setCsrfToken(window.localStorage.getItem("csrf"));
-    }
-
-    //    progress.lock();
-
-    this.mainPageRef = React.createRef();
-    if (!window.location.protocol.toLowerCase().startsWith("http")) {
       setApiUrl("https://ext.trial.passhub.net/");
       setWsUrl("wss://ext.trial.passhub.net/wsapp/");
     } else {
@@ -58,6 +52,7 @@ class Root extends Component {
       let wsURL = new URL(window.location.href);
       setWsUrl("wss://" + wsURL.hostname + "/wsapp/");
     }
+    this.mainPageRef = React.createRef();
   }
 
   componentDidMount = () => {

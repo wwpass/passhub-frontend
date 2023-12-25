@@ -90,7 +90,6 @@ function CSVToArray( strData, strDelimiter ){
   return( arrData );
 }
 
-
 function findFolder(folders, path) {
   for (let f = 0; f < folders.length; f++) {
     if (folders[f].name == path[0]) {
@@ -102,7 +101,7 @@ function findFolder(folders, path) {
     }
   }
   // not found
-  const folder = { name: path[0], folders: [], entries: [] };
+  const folder = { name: path[0], folders: [], items: [] };
   folders.push(folder);
   if (path.length === 1) {
     return folder;
@@ -113,29 +112,53 @@ function findFolder(folders, path) {
 
 function addRecordToSafe(safe, record, path) {
   if (path.length === 0) {
-    safe.entries.push(record);
+    safe.items.push(record);
     return;
   }
   const folder = findFolder(safe.folders, path);
-  folder.entries.push(record);
+  folder.items.push(record);
 }
 
 
-function addRecord(safes, r) {
+function addRecord(safes, r, options = {}) {
   const path = r.shift().split('/');
   // check_limits_on_import(r); // raises exception
   for (let s = 0; s < safes.length; s++) {
     if (safes[s].name == path[0]) {
       path.shift();
-      addRecordToSafe(safes[s], { cleartext: r, options: {} }, path);
+      addRecordToSafe(safes[s], { cleartext: r, options }, path);
       return;
     }
   }
   // no such safe
-  const safe = { name: path[0], folders: [], entries: [] };
+  const safe = { name: path[0], folders: [], items: [] };
   safes.push(safe);
   path.shift();
-  addRecordToSafe(safe, { cleartext: r, options: {} }, path);
+  addRecordToSafe(safe, { cleartext: r, options }, path);
+}
+
+
+function monthToNumber(aMonth){
+  let month = aMonth.substring(0,3).toLowerCase();
+  const translation = {
+    "jan": "01",
+    "feb": "02",
+    "mar": "03",
+    "apr": "04",
+    "may": "05",
+    "jun": "06",
+    "jul": "07",
+    "aug": "08",
+    "sep": "09",
+    "oct": "10",
+    "nov": "11",
+    "dec": "12",
+  }
+
+  if (month in translation) {
+    return translation[month];
+  }
+  return aMonth;
 }
 
 function importCSV(text) {
@@ -182,9 +205,95 @@ function importCSV(text) {
       return safes;
     }
 
+  // url,username,password,totp, extra,name,grouping,fav -- new lastpass
+  if ((titles.length === 8)
+    && (titles[0] === 'url')
+    && (titles[1] === 'username')
+    && (titles[2] === 'password')
+    && (titles[3] === 'totp')
+    && (titles[4] === 'extra')
+    && (titles[5] === 'name')
+    && (titles[6] === 'grouping')
+    && (titles[7] === 'fav')) {
 
 
-  // url,username,password,extra,name,grouping,fav -- lastpass
+    data.forEach((e) => {
+
+      if(e.length === 8) {
+
+        const extra1 = e[6].replaceAll('\\', '/');
+        const path = extra1 == '' ? 'lastpass':`lastpass/${extra1}`;
+        
+        let options = {};
+
+        if((e[0] == "http://sn") && (e[1] == "") && (e[2] == "")) {
+          options = {note: 1};
+
+          if(e[4].startsWith('NoteType:Credit Card\n')) {
+
+                  /*
+                  NoteType:Credit Card
+                  Language:en-US
+                  Name on Card:emili bronte
+                  Type:type-credit
+                  Number:4242 4242 4242 4242
+                  Security Code:123
+                  Start Date:March,22
+                  Expiration Date:April,25
+                  Notes:notes for card)
+                  */
+
+            let ccFields = e[4].split('\n');
+            let [ccName, ccNumber, ccExpMonth, ccExpYear, ccCsc, notes ] = ["", "", "", "", "", "", ""];
+            for(let ccField of ccFields) {
+              let [key, value] = ccField.split(':');
+              if((typeof(key) == 'string') && (typeof(value) == 'string')) {
+                switch(key) {
+                  case "Name on Card": 
+                    ccName = value;
+                    break;
+                  case "Number": 
+                    ccNumber= value;
+                    break;
+                  case "Security Code": 
+                    ccCsc= value;
+                    break;
+                  case "Expiration Date":
+                    [ ccExpMonth, ccExpYear ] = value.split(',');
+                    ccExpMonth = monthToNumber(ccExpMonth);
+                    break;
+                  case "Notes": 
+                    notes = value;
+                }
+              }
+            }
+            console.log(ccName, ccNumber, ccExpMonth, ccExpYear, ccCsc, notes);
+            const pData = [
+              path,
+              "card",
+              e[5],
+              notes,
+              ccNumber,
+              ccName,
+              ccExpMonth,
+              ccExpYear,
+              ccCsc,
+            ];
+            addRecord(safes, pData, {version:5});
+          } else {
+            addRecord(safes, [path, e[5], e[1], e[2], e[0], e[4]], options);            
+          }
+        } else if(e[3].trim() === "") {
+          addRecord(safes, [path, e[5], e[1], e[2], e[0], e[4]], options);
+        } else {
+          addRecord(safes, [path, e[5], e[1], e[2], e[0], e[4], e[3]], options);
+        }
+      }
+    });
+    return safes;
+  }
+
+  // url,username,password,extra,name,grouping,fav -- old lastpass
   if ((titles.length === 7)
     && (titles[0] === 'url')
     && (titles[1] === 'username')
@@ -194,9 +303,12 @@ function importCSV(text) {
     && (titles[5] === 'grouping')
     && (titles[6] === 'fav')) {
 
+
     data.forEach((e) => {
       if(e.length === 7) {
-        addRecord(safes, ['lastpass', e[4], e[1], e[2], e[0], e[3]]);
+        const extra1 = e[5].replaceAll('\\', '/');
+
+        addRecord(safes, [extra1, e[4], e[1], e[2], e[0], e[3]]);
       }
     });
     return safes;
@@ -211,6 +323,22 @@ function importCSV(text) {
     data.forEach((e) => {
       if(e.length === 4) {
         const e1 = ['chrome', e[0], e[2], e[3], e[1], ''];
+        addRecord(safes, e1);
+      }
+    });
+    return safes;
+  }
+
+  if ((titles.length === 5) // chrome (at least 112)
+    && (titles[0] === 'name')
+    && (titles[1] === 'url')
+    && (titles[2] === 'username')
+    && (titles[3] === 'password')
+    && (titles[4] === 'note')) {
+        // chrome
+    data.forEach((e) => {
+      if(e.length === 5) {
+        const e1 = ['chrome', e[0], e[2], e[3], e[1], e[4]];
         addRecord(safes, e1);
       }
     });
@@ -241,7 +369,8 @@ function importCSV(text) {
   }
   
   if (titles.length !== 6) {
-    throw new Error('Unknown file format');
+    return 'Unknown file format';
+//    throw new Error('Unknown file format');
   }
   // KeePassX
   data.forEach((e) => {
@@ -250,8 +379,6 @@ function importCSV(text) {
     }
   });
   return safes;
-
 }
-
 
 export default importCSV;

@@ -20,6 +20,7 @@ import CreateFileModal from "./createFileModal";
 import DeleteItemModal from "./deleteItemModal";
 import AddDropUp from "./addDropUp";
 import FolderMenuMobile from "./folderMenuMobile";
+import PathElement from "./pathElement";
 
 import { getFolderById } from "../lib/utils";
 
@@ -201,6 +202,7 @@ class TablePane extends Component {
   onItemModalClose = (refresh = false) => {
     this.setState({ showModal: "" });
     if (refresh === true) {
+/*
       if (this.props.searchMode) {
         const folderID =
           this.state.itemModalArgs.item.folder != 0 // not !== intentionally, better have it "0"
@@ -208,13 +210,14 @@ class TablePane extends Component {
             : this.state.itemModalArgs.item.SafeID;
         this.props.setActiveFolder(folderID);
       }
+*/
       this.props.refreshUserData({
         safes: [this.state.itemModalArgs.safe.id],
       });
     }
   };
 
-  onItemModalCloseSetFolder = () => {
+  onItemModalCloseSetFolder = (f) => {
     this.setState({ showModal: "" });
     if (this.props.searchMode) {
       const folderID =
@@ -222,6 +225,8 @@ class TablePane extends Component {
           ? this.state.itemModalArgs.item.folder
           : this.state.itemModalArgs.item.SafeID;
       this.props.setActiveFolder(folderID);
+    } else {
+      this.props.setActiveFolder(f);
     }
   };
 
@@ -244,11 +249,26 @@ class TablePane extends Component {
     }
 
     const { folder } = this.props;
-
+    /*
     const pathToFolder =
       folder.path.length < 2
         ? ""
-        : folder.path.slice(0, -1).join(" > ") + " > ";
+        : folder.path
+            .slice(0, -1)
+            .map((e) => e[0])
+            .join(" > ") + " > ";
+*/
+    let pathString = [];
+    for (let i = 0; i < folder.path.length - 1; i++) {
+      pathString.push(
+        <PathElement
+          name={folder.path[i][0]}
+          folderid={folder.path[i][1]}
+          gt={folder.path.length - i - 1}
+          onClick={(f) => this.openFolder(f)}
+        ></PathElement>
+      );
+    }
 
     const emptyFolder = !(folder.folders.length + folder.items.length > 0);
     const isSafe = folder.path.length === 1 && !this.props.searchMode;
@@ -306,7 +326,7 @@ class TablePane extends Component {
 
             {folder.path.length === 1
               ? "All safes"
-              : folder.path[folder.path.length - 2]}
+              : folder.path[folder.path.length - 2][0]}
           </div>
           <div
             className="d-sm-none"
@@ -316,7 +336,7 @@ class TablePane extends Component {
               position: "relative",
             }}
           >
-            <div className="h5">{folder.path[folder.path.length - 1]}</div>
+            <div className="h5">{folder.path[folder.path.length - 1][0]}</div>
             {!this.props.searchMode && true && (
               <FolderMenuMobile
                 node={folder}
@@ -327,13 +347,35 @@ class TablePane extends Component {
             )}
           </div>
 
+{/*
+
+          <div
+            className="d-none d-sm-block"
+            style={{ 
+              color: "#1B1B26",
+              marginBottom: "28px",
+              
+               }}
+          >
+            <div style='display:"flex", overflowX:"clip",
+              textOverflow:"ellipsis",
+              whiteSpace:"nowrap"'>
+              <div>{pathString}</div>
+              
+              <b>{folder.path[folder.path.length - 1][0]}</b>
+            </div>
+          </div>
+              */}
+
           <div
             className="d-none d-sm-block"
             style={{ color: "#1B1B26", marginBottom: "28px" }}
           >
-            {pathToFolder}
-            <b>{folder.path[folder.path.length - 1]}</b>
+            {pathString}
+            <b>{folder.path[folder.path.length - 1][0]}</b>
           </div>
+
+
 
           {emptyFolder && (
             <div>
@@ -358,21 +400,22 @@ class TablePane extends Component {
               <table className="item_table">
                 <thead>
                   <tr className="d-flex">
-                    <th className="d-none d-sm-table-cell col-sm-12 col-md-6 col-lg-4 col-xl-3">
+                    <th className="d-none d-sm-table-cell col-sm-12 col-md-6 col-lg-4 col-xl-3" style={{paddinLeft:0}}>
                       Title
                     </th>
+                    <th className="d-none d-xl-table-cell                             col-xl-3"></th>
                     <th className="d-none d-md-table-cell           col-md-6 col-lg-4 col-xl-3"></th>
-                    <th className="d-none d-lg-table-cell                    col-lg-4 col-xl-3"></th>
-                    <th className="d-none d-xl-table-cell                             col-xl-3 column-modified">
+                    <th className="d-none d-lg-table-cell                    col-lg-4 col-xl-3 column-modified">
                       Modified
-                    </th>
+                      </th>
                   </tr>
                 </thead>
                 <tbody>
                   {folder.folders.map((f) => (
                     <FolderItem
-                      key={`folder${f._id}`}
                       item={f}
+                      key={`folder${f._id}`}
+                      searchMode={this.props.searchMode}
                       dropItem={this.props.dropItem}
                       onClick={(folder) => {
                         this.openFolder(folder);

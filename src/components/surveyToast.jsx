@@ -12,7 +12,7 @@ class SurveyToast extends Component {
     return (
       <Toast onClose={this.props.onClose} show={this.props.show}>
         <div className="toast-header">
-          <div>Help us improve PassHub.net</div>
+          <div>Help us improve PassHub</div>
           <div>
             <svg
               style={{ width: 24, height: 24, cursor: "pointer" }}

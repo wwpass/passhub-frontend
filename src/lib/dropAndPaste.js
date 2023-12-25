@@ -24,16 +24,60 @@ function moveItemFinalize(recordID, src_safe, dst_safe, dst_folder, item, operat
     });
 }
 
-function doMove(safes, node, item, operation) {
-  const dstBinaryKey = node.safe ? node.safe.bstringKey : node.bstringKey;
+function moveFolder(safes, targetNode, folderID) {
 
-  let dst_safe = node.id;
-  let dstFolder = 0;
-  if (node.safe) {
-    dst_safe = node.safe.id;
-    dstFolder = node.id;
+  const dstBinaryKey = targetNode.safe ? targetNode.safe.bstringKey : targetNode.bstringKey;
+  const srcFolder = getFolderById(safes, folderID);
+  const folder = passhubCrypto.encryptFolder(srcFolder, dstBinaryKey);
+  if(srcFolder.path.length > 1) {
+    if(srcFolder.path[srcFolder.path.length-2][1] == targetNode.id) {
+      console.log("move to parent: identity operation");
+      return Promise.reject({message: "move to parent: identity operation"});
+    }  
   }
+  
+  let dstSafe = targetNode.id;
+  let dstFolder = 0;
+  if (targetNode.safe) {
+    dstSafe = targetNode.safe.id;
+    dstFolder = targetNode.id;
+    for(const pathEntry of targetNode.path) {
+      if (pathEntry[1] == folderID) {
+        return new Promise(function(resolve, reject) {
+          reject({message: "drop into child"});
+        })
+      };
+    }
+  }
+  
+  return axios
+    .post(`${getApiUrl()}move.php`, {
+      verifier: getVerifier(),
+      folder,
+      dstSafe,
+      dstFolder
+    })
+    .then( response => response.data.status);
+}
+
+
+function doMove(safes, targetNode, item, operation) {
+  if("type" in item) { //ad-hoc folder
+    return moveFolder(safes, targetNode, item.id);
+  }
+
+  const dstBinaryKey = targetNode.safe ? targetNode.safe.bstringKey : targetNode.bstringKey;
+
+  let dst_safe = targetNode.id;
+  let dstFolder = 0;
+  if (targetNode.safe) {
+    dst_safe = targetNode.safe.id;
+    dstFolder = targetNode.id;
+  }
+
+
   let src_safe = item.SafeID;
+
   /// --->> if src == dst, do nothing
 
   return axios
@@ -91,4 +135,4 @@ function doMove(safes, node, item, operation) {
     })
 };
 
-export {doMove};
+export {doMove, moveFolder};
