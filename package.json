@@ -29,6 +29,7 @@
     "start": "react-scripts start",
     "build": " set \"NODE_OPTIONS=--openssl-legacy-provider\" &&  react-scripts build",
     "builddev": "dotenv -e .env.development react-scripts build",
+    "start-win":    "set \"NODE_OPTIONS=--openssl-legacy-provider\"   && set \"PUBLIC_URL=.\" && set \"BUILD_PATH=./build-ext\" && react-scripts start",
     "buildext-win": "set \"INLINE_RUNTIME_CHUNK=false\" && set \"PUBLIC_URL=.\" && set \"BUILD_PATH=./build-ext\" && react-scripts build",
     "buildext": "INLINE_RUNTIME_CHUNK=false npm run build",
     "test": "react-scripts test",

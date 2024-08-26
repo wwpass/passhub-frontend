@@ -107,7 +107,7 @@ class AccountDropDown extends Component {
                   color: "#979797",
                 }}
               >
-                Free acount{" "}
+                Free account{" "}
                 <a className="link" href="#" onClick={this.onUpgrade}>
                   Upgrade
                 </a>

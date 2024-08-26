@@ -35,11 +35,11 @@ class SafeUSer extends Component {
     <Menu id={"safe-user-menu"}>
       <Item
         onClick={(e) => {
-          this.handleRoleMenuClick("Limited view", e.props.user);
+          this.handleRoleMenuClick("Safe owner", e.props.user);
         }}
       >
         <div>
-          <div>Limited view</div>
+          <div>Safe owner</div>
           <div
             style={{
               fontSize: "13px",
@@ -48,29 +48,11 @@ class SafeUSer extends Component {
               whiteSpace: "break-spaces",
             }}
           >
-            User can only view records and download files, passwords are hidden
+            Additionaly can share safe and manage user access rights
           </div>
         </div>
       </Item>
-      <Item
-        onClick={(e) => {
-          this.handleRoleMenuClick("Can view", e.props.user);
-        }}
-      >
-        <div>
-          <div>Can view</div>
-          <div
-            style={{
-              fontSize: "13px",
-              opacity: "0.5",
-              maxWidth: "17em",
-              whiteSpace: "break-spaces",
-            }}
-          >
-            User can only view records and download files
-          </div>
-        </div>
-      </Item>
+
       <Item
         onClick={(e) => {
           console.log(e);
@@ -91,13 +73,14 @@ class SafeUSer extends Component {
           </div>
         </div>
       </Item>
+      
       <Item
         onClick={(e) => {
-          this.handleRoleMenuClick("Safe owner", e.props.user);
+          this.handleRoleMenuClick("Can view", e.props.user);
         }}
       >
         <div>
-          <div>Safe owner</div>
+          <div>Can view</div>
           <div
             style={{
               fontSize: "13px",
@@ -106,10 +89,32 @@ class SafeUSer extends Component {
               whiteSpace: "break-spaces",
             }}
           >
-            Additionaly can share safe and manage user access rights
+            User can only view records and download files
           </div>
         </div>
       </Item>
+
+      <Item
+        onClick={(e) => {
+          this.handleRoleMenuClick("Limited view", e.props.user);
+        }}
+        hidden={!this.props.hiddenPasswordEnabled}
+      >
+        <div>
+          <div>Limited view</div>
+          <div
+            style={{
+              fontSize: "13px",
+              opacity: "0.5",
+              maxWidth: "17em",
+              whiteSpace: "break-spaces",
+            }}
+          >
+            User can only view records and download files, passwords are hidden
+          </div>
+        </div>
+      </Item>
+
       <Item onClick={(e) => this.handleRoleMenuClick("Remove", e.props.user)}>
         <div style={{ color: "#B40020", fontWeight: "bold" }}>
           Revoke access

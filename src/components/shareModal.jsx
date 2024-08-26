@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getApiUrl, getVerifier } from "../lib/utils";
+import { getApiUrl, getVerifier, getUserData } from "../lib/utils";
 import React, { Component } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
@@ -12,12 +12,14 @@ import SafeUser from "./safeUser";
 import ItemModalFieldNav from "./itemModalFieldNav";
 import * as passhubCrypto from "../lib/crypto";
 
+
 class ShareModal extends Component {
   state = {
     userList: [],
     email: "",
     invitedUserRights: "can view",
     errorMsg: "",
+    hiddenPasswordEnabled: ('HIDDEN_PASSWORDS_ENABLED' in getUserData()) &&  getUserData().HIDDEN_PASSWORDS_ENABLED
   };
 
   isShown = false;
@@ -37,11 +39,11 @@ class ShareModal extends Component {
     <Menu id={"invited-user-menu"}>
       <Item
         onClick={(e) => {
-          this.setState({ invitedUserRights: "limited view" });
+          this.setState({ invitedUserRights: "safe owner" });
         }}
       >
         <div>
-          <div>Limited view</div>
+          <div>Safe owner</div>
           <div
             style={{
               fontSize: "13px",
@@ -50,27 +52,7 @@ class ShareModal extends Component {
               whiteSpace: "break-spaces",
             }}
           >
-            User can only view records and download files, passwords are hidden
-          </div>
-        </div>
-      </Item>
-
-      <Item
-        onClick={(e) => {
-          this.setState({ invitedUserRights: "can view" });
-        }}
-      >
-        <div>
-          <div>Can view</div>
-          <div
-            style={{
-              fontSize: "13px",
-              opacity: "0.5",
-              maxWidth: "17em",
-              whiteSpace: "break-spaces",
-            }}
-          >
-            User can only view records and download files
+            Additionaly can share safe and manage user access rights
           </div>
         </div>
       </Item>
@@ -94,13 +76,14 @@ class ShareModal extends Component {
           </div>
         </div>
       </Item>
+      
       <Item
         onClick={(e) => {
-          this.setState({ invitedUserRights: "safe owner" });
+          this.setState({ invitedUserRights: "can view" });
         }}
       >
         <div>
-          <div>Safe owner</div>
+          <div>Can view</div>
           <div
             style={{
               fontSize: "13px",
@@ -109,10 +92,32 @@ class ShareModal extends Component {
               whiteSpace: "break-spaces",
             }}
           >
-            Additionaly can share safe and manage user access rights
+            User can only view records and download files
           </div>
         </div>
       </Item>
+
+      <Item
+        onClick={(e) => {
+          this.setState({ invitedUserRights: "limited view" });
+        }}
+        hidden={!this.state.hiddenPasswordEnabled}
+      >
+        <div>
+          <div>Limited view</div>
+          <div
+            style={{
+              fontSize: "13px",
+              opacity: "0.5",
+              maxWidth: "17em",
+              whiteSpace: "break-spaces",
+            }}
+          >
+            User can only view records and download files, passwords are hidden
+          </div>
+        </div>
+      </Item>
+
     </Menu>
   );
 
@@ -350,6 +355,9 @@ class ShareModal extends Component {
         const result = reply.data;
         if (result.status === "Ok") {
           this.setUserList(result.UserList);
+          if('HIDDEN_PASSWORDS_ENABLED' in result) {
+            this.setState({hiddenPasswordEnabled:result.HIDDEN_PASSWORDS_ENABLED});
+          }
           /*
           let filteredUserList = result.UserList.filter((user) => {
             if (user.myself && user.role == "administrator") {
@@ -535,6 +543,7 @@ class ShareModal extends Component {
                 user={user}
                 isAdmin={this.isAdmin}
                 setUserRole={this.setUserRole}
+                hiddenPasswordEnabled={this.state.hiddenPasswordEnabled}
               />
             );
           })}

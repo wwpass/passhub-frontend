@@ -152,7 +152,7 @@ class AccountModal extends Component {
           )}
           { !accountData.business && (accountData.plan.toUpperCase() == "PREMIUM") && premiumDiv } 
 
-          <div style={{ margin: "0 0 12px 0" }}>Inactvity timeout</div>
+          <div style={{ margin: "0 0 12px 0" }}>Inactivity timeout</div>
           <div style={{ marginBottom: "64px", padding: "0 32px" }}>
             <Slider
               value={slider_position}
